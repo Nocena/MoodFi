@@ -5,7 +5,7 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ConnectKitProvider, getDefaultConfig} from "connectkit";
 import {WALLETCONNECT_PROJECT_ID} from "../constants";
 
-const config = createConfig(
+export const walletConfig = createConfig(
     getDefaultConfig({
         // Your dApps chains
         chains: [mainnet, lensTestnet],
@@ -28,7 +28,7 @@ const queryClient = new QueryClient();
 export const WalletProvider = ({children}: { children: React.ReactNode }) => {
     return (
         <ThirdwebProvider>
-            <WagmiProvider config={config}>
+            <WagmiProvider config={walletConfig}>
                 <QueryClientProvider client={queryClient}>
                     <ConnectKitProvider>{children}</ConnectKitProvider>
                 </QueryClientProvider>

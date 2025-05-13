@@ -1,4 +1,5 @@
 import { BigNumberish } from 'ethers';
+import {AuthenticatedSession, SessionClient} from "@lens-protocol/client";
 
 export interface User {
   id: string;
@@ -89,3 +90,13 @@ export interface NFTMarketItem {
   creator: User;
   moodEntry: MoodEntry;
 }
+
+export type LensAuthContextType = {
+  activeSession: AuthenticatedSession | null;
+  client: SessionClient | null;
+  isLoading: boolean;
+  authenticate: (config: any, lensAccount: any, appId: string, walletAddr: string) => Promise<void>;
+  disconnect: () => Promise<void>;
+  restore: () => Promise<void>;
+  onboard: (params: { appId: string; walletAddr: string }) => Promise<void>;
+};

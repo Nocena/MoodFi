@@ -14,30 +14,33 @@ import NotificationsPage from './pages/NotificationsPage';
 import NFTMarketplacePage from './pages/NFTMarketplacePage';
 import MyNFTsPage from './pages/MyNFTsPage';
 import {WalletProvider} from "./providers/WalletProvider.tsx";
+import {LensAuthProvider} from "./providers/LensAuthProvider.tsx";
 
 function App() {
     return (
         <WalletProvider>
-            <ChakraProvider theme={theme}>
-                <Router>
-                    <Routes>
-                        <Route path="/login" element={<AuthPage/>}/>
-                        <Route path="/signup" element={<AuthPage/>}/>
-                        <Route path="/" element={<Layout/>}>
-                            <Route index element={<HomePage/>}/>
-                            <Route path="camera" element={<CameraPage/>}/>
-                            <Route path="profile" element={<ProfilePage/>}/>
-                            <Route path="profile/followers" element={<FollowersPage/>}/>
-                            <Route path="discover" element={<DiscoverPage/>}/>
-                            <Route path="messages" element={<MessagesPage/>}/>
-                            <Route path="notifications" element={<NotificationsPage/>}/>
-                            <Route path="nft/marketplace" element={<NFTMarketplacePage/>}/>
-                            <Route path="nft/my-nfts" element={<MyNFTsPage/>}/>
-                        </Route>
-                        <Route path="*" element={<Navigate to="/" replace/>}/>
-                    </Routes>
-                </Router>
-            </ChakraProvider>
+            <LensAuthProvider>
+                <ChakraProvider theme={theme}>
+                    <Router>
+                        <Routes>
+                            <Route path="/login" element={<AuthPage/>}/>
+                            <Route path="/signup" element={<AuthPage/>}/>
+                            <Route path="/" element={<Layout/>}>
+                                <Route index element={<HomePage/>}/>
+                                <Route path="camera" element={<CameraPage/>}/>
+                                <Route path="profile" element={<ProfilePage/>}/>
+                                <Route path="profile/followers" element={<FollowersPage/>}/>
+                                <Route path="discover" element={<DiscoverPage/>}/>
+                                <Route path="messages" element={<MessagesPage/>}/>
+                                <Route path="notifications" element={<NotificationsPage/>}/>
+                                <Route path="nft/marketplace" element={<NFTMarketplacePage/>}/>
+                                <Route path="nft/my-nfts" element={<MyNFTsPage/>}/>
+                            </Route>
+                            <Route path="*" element={<Navigate to="/" replace/>}/>
+                        </Routes>
+                    </Router>
+                </ChakraProvider>
+            </LensAuthProvider>
         </WalletProvider>
     );
 }
