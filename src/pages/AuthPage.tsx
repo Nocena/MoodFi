@@ -7,7 +7,6 @@ import {
   Heading,
   Text,
   Container,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { useAuthStore } from '../store/authStore';
 import LoginForm from '../components/auth/LoginForm';
@@ -31,7 +30,7 @@ const AuthPage: React.FC = () => {
             bgGradient="linear(to-r, brand.400, brand.600)"
             bgClip="text"
           >
-            MoodMatch
+            MoodFi
           </Heading>
           <Text fontSize={'lg'} color={'gray.600'} _dark={{ color: 'gray.300' }} mt={2}>
             {isLogin ? 'Sign in to your account' : 'Create your account'}

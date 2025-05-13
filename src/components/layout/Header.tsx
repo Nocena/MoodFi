@@ -1,35 +1,23 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import {Link as RouterLink} from 'react-router-dom';
 import {
-  Box,
-  Flex,
-  Text,
-  IconButton,
-  Button,
-  Stack,
-  Collapse,
-  Icon,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  useColorModeValue,
-  useBreakpointValue,
-  useDisclosure,
-  useColorMode,
   Avatar,
-  HStack,
   Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Stack,
+  Text,
+  useBreakpointValue,
+  useColorMode,
+  useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { useAuthStore } from '../../store/authStore';
-import { useSocialStore } from '../../store/socialStore';
-import { 
-  Camera, 
-  User, 
-  LogOut, 
-  Bell, 
-  Moon, 
-  Sun 
-} from 'lucide-react';
+import {useAuthStore} from '../../store/authStore';
+import {useSocialStore} from '../../store/socialStore';
+import {Bell, Camera, Moon, Sun} from 'lucide-react';
 
 const Header: React.FC = () => {
   const { isOpen, onToggle } = useDisclosure();
@@ -67,7 +55,7 @@ const Header: React.FC = () => {
             as={RouterLink}
             to="/"
           >
-            MoodMatch
+            MoodFi
           </Text>
         </Flex>
 

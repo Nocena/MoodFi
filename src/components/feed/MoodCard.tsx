@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import React, {useState} from 'react';
+import {Link as RouterLink} from 'react-router-dom';
 import {
-  Box,
-  Flex,
-  Image,
-  Text,
   Avatar,
-  HStack,
-  VStack,
-  IconButton,
-  useColorModeValue,
-  Badge,
-  Divider,
-  Input,
+  Box,
   Button,
   Collapse,
+  Divider,
+  Flex,
+  HStack,
+  IconButton,
+  Image,
+  Input,
+  Text,
+  useColorModeValue,
+  VStack,
 } from '@chakra-ui/react';
-import { Heart, MessageCircle, Award } from 'lucide-react';
-import { User, MoodEntry, Comment } from '../../types';
-import { useSocialStore } from '../../store/socialStore';
+import {Award, Heart, MessageCircle} from 'lucide-react';
+import {MoodEntry, User} from '../../types';
+import {useSocialStore} from '../../store/socialStore';
 
 interface MoodCardProps {
   user: User;
