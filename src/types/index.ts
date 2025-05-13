@@ -1,3 +1,5 @@
+import { BigNumberish } from 'ethers';
+
 export interface User {
   id: string;
   username: string;
@@ -11,15 +13,21 @@ export interface User {
   isOnline: boolean;
   lastActive: string;
   joinedDate: string;
+  tokenBalance: BigNumberish;
+  nfts: NFT[];
 }
 
 export interface MoodEntry {
+  id: string;
   date: string;
   mood: Mood;
   photo: string;
   reward: boolean;
   comments: Comment[];
   likes: string[];
+  socialScore: number;
+  isNFT: boolean;
+  nftData?: NFT;
 }
 
 export type Mood = 'happy' | 'sad' | 'excited' | 'calm' | 'neutral';
@@ -49,7 +57,7 @@ export interface Conversation {
 
 export interface Notification {
   id: string;
-  type: 'follow' | 'comment' | 'like' | 'message' | 'reward' | 'match';
+  type: 'follow' | 'comment' | 'like' | 'message' | 'reward' | 'match' | 'nft_sale' | 'nft_purchase';
   userId: string;
   targetId?: string;
   text: string;
@@ -60,4 +68,24 @@ export interface Notification {
 export interface DailyMood {
   date: string;
   mood: Mood;
+}
+
+export interface NFT {
+  id: string;
+  tokenId: string;
+  moodEntryId: string;
+  creatorId: string;
+  ownerId: string;
+  price: BigNumberish;
+  isListed: boolean;
+  createdAt: string;
+  mintedAt: string;
+  lastSoldAt?: string;
+  lastSoldPrice?: BigNumberish;
+}
+
+export interface NFTMarketItem {
+  nft: NFT;
+  creator: User;
+  moodEntry: MoodEntry;
 }

@@ -14,7 +14,9 @@ import {
   Camera,
   User,
   MessageSquare,
-  Bell
+  Bell,
+  Coins,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -65,6 +67,8 @@ const Navigation: React.FC = () => {
     { name: 'Messages', icon: MessageSquare, path: '/messages' },
     { name: 'Notifications', icon: Bell, path: '/notifications' },
     { name: 'Profile', icon: User, path: '/profile' },
+    { name: 'NFT Marketplace', icon: Coins, path: '/nft/marketplace' },
+    { name: 'My NFTs', icon: ImageIcon, path: '/nft/my-nfts' },
   ];
   
   return (
