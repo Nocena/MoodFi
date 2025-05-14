@@ -30,7 +30,14 @@ export const WalletProvider = ({children}: { children: React.ReactNode }) => {
         <ThirdwebProvider>
             <WagmiProvider config={walletConfig}>
                 <QueryClientProvider client={queryClient}>
-                    <ConnectKitProvider>{children}</ConnectKitProvider>
+                    <ConnectKitProvider
+                        customTheme={{
+                            "--ck-connectbutton-color": "white",
+                            "--ck-connectbutton-background": "#3182ce",
+                            "--ck-connectbutton-hover-background": "#4399ed",
+                            "--ck-connectbutton-active-background": "#4399ed",
+                        }}
+                    >{children}</ConnectKitProvider>
                 </QueryClientProvider>
             </WagmiProvider>
         </ThirdwebProvider>

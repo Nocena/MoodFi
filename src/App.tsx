@@ -4,7 +4,7 @@ import {ChakraProvider} from '@chakra-ui/react';
 import theme from './theme';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
-import AuthPage from './pages/AuthPage';
+import SignInPage from './pages/SignInPage.tsx';
 import CameraPage from './pages/CameraPage';
 import ProfilePage from './pages/ProfilePage';
 import FollowersPage from './pages/FollowersPage';
@@ -13,8 +13,9 @@ import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import NFTMarketplacePage from './pages/NFTMarketplacePage';
 import MyNFTsPage from './pages/MyNFTsPage';
-import {WalletProvider} from "./providers/WalletProvider.tsx";
-import {LensAuthProvider} from "./providers/LensAuthProvider.tsx";
+import {WalletProvider} from "./providers/WalletProvider";
+import {LensAuthProvider} from "./providers/LensAuthProvider";
+import SignUpPage from "./pages/SignUpPage";
 
 function App() {
     return (
@@ -23,8 +24,8 @@ function App() {
                 <ChakraProvider theme={theme}>
                     <Router>
                         <Routes>
-                            <Route path="/login" element={<AuthPage/>}/>
-                            <Route path="/signup" element={<AuthPage/>}/>
+                            <Route path="/login" element={<SignInPage/>}/>
+                            <Route path="/signup" element={<SignUpPage/>}/>
                             <Route path="/" element={<Layout/>}>
                                 <Route index element={<HomePage/>}/>
                                 <Route path="camera" element={<CameraPage/>}/>
