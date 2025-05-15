@@ -110,7 +110,6 @@ const SignUpPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-
       await onboard(walletAddress)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error

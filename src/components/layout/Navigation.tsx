@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -18,6 +18,7 @@ import {
   Coins,
   Image as ImageIcon,
 } from 'lucide-react';
+import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -59,17 +60,20 @@ const NavItem: React.FC<NavItemProps> = ({ icon, children, to, isActive }) => {
 
 const Navigation: React.FC = () => {
   const location = useLocation();
+  const {currentAccount} = useLensAuth()
   
-  const navigationItems = [
-    { name: 'Home', icon: Home, path: '/' },
-    { name: 'Discover', icon: Compass, path: '/discover' },
-    { name: 'Camera', icon: Camera, path: '/camera' },
-    { name: 'Messages', icon: MessageSquare, path: '/messages' },
-    { name: 'Notifications', icon: Bell, path: '/notifications' },
-    { name: 'Profile', icon: User, path: '/profile' },
-    { name: 'NFT Marketplace', icon: Coins, path: '/nft/marketplace' },
-    { name: 'My NFTs', icon: ImageIcon, path: '/nft/my-nfts' },
-  ];
+  const navigationItems = useMemo(() => {
+    return [
+      { name: 'Home', icon: Home, path: '/' },
+      { name: 'Discover', icon: Compass, path: '/discover' },
+      { name: 'Camera', icon: Camera, path: '/camera' },
+      { name: 'Messages', icon: MessageSquare, path: '/messages' },
+      { name: 'Notifications', icon: Bell, path: '/notifications' },
+      { name: 'Profile', icon: User, path: `/profile/${currentAccount?.localName}` },
+      { name: 'NFT Marketplace', icon: Coins, path: '/nft/marketplace' },
+      { name: 'My NFTs', icon: ImageIcon, path: '/nft/my-nfts' },
+    ]
+  }, [currentAccount])
   
   return (
     <Box p={4}>

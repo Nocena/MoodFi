@@ -29,7 +29,7 @@ function App() {
                             <Route path="/" element={<Layout/>}>
                                 <Route index element={<HomePage/>}/>
                                 <Route path="camera" element={<CameraPage/>}/>
-                                <Route path="profile" element={<ProfilePage/>}/>
+                                <Route path="profile/:name" element={<ProfilePage/>}/>
                                 <Route path="profile/followers" element={<FollowersPage/>}/>
                                 <Route path="discover" element={<DiscoverPage/>}/>
                                 <Route path="messages" element={<MessagesPage/>}/>

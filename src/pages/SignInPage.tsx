@@ -30,28 +30,7 @@ import {ConnectKitButton} from "connectkit";
 import {useLensAuth} from "../providers/LensAuthProvider";
 import {useAccount} from "wagmi";
 import {AccountType} from "../types";
-
-// Mock existing accounts
-const existingAccounts = [
-    {
-        id: '1',
-        username: 'sarah.mood',
-        name: 'Sarah Wilson',
-        avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600',
-    },
-    {
-        id: '2',
-        username: 'mark.vibes',
-        name: 'Mark Johnson',
-        avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600',
-    },
-    {
-        id: '3',
-        username: 'emma.joy',
-        name: 'Emma Davis',
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600',
-    },
-];
+import {fetchAvailableLensAccounts} from "../utils/lens.utils.ts";
 
 const features = [
     {
@@ -103,28 +82,19 @@ const AccountSelectionModal = ({
     const {
         address: walletAddress,
     } = useAccount()
-    const {fetchAvailableLensAccounts, authenticate, isAuthenticating} = useLensAuth()
+    const {authenticate, isAuthenticating} = useLensAuth()
     const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
     const [availableAccounts, setAvailableAccounts] = useState<AccountType[]>([]);
     const [selectedAccount, setSelectedAccount] = useState<AccountType | null>(null);
     const handleSelectAccount = async (account: AccountType) => {
         setSelectedAccount(account)
         await authenticate(account.accountAddress, walletAddress!)
-        /*
-                try {
-                    await login(account.username, 'password');
-                    navigate('/');
-                } catch (error) {
-                    console.error('Login failed:', error);
-                }
-        */
     };
 
     useEffect(() => {
         if (walletAddress) {
             setIsLoadingAccounts(true)
             fetchAvailableLensAccounts(walletAddress).then(accounts => {
-                console.log("accounts", accounts)
                 setAvailableAccounts(accounts)
                 setIsLoadingAccounts(false)
             }).catch(err => {
@@ -132,7 +102,9 @@ const AccountSelectionModal = ({
                 setIsLoadingAccounts(false)
             })
         }
-    }, [fetchAvailableLensAccounts, walletAddress])
+    }, [walletAddress])
+
+    const boxBgColor = useColorModeValue('gray.50', 'gray.700')
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
@@ -161,7 +133,7 @@ const AccountSelectionModal = ({
                                             borderRadius="xl"
                                             cursor="pointer"
                                             _hover={{
-                                                bg: useColorModeValue('gray.50', 'gray.700'),
+                                                bg: boxBgColor,
                                                 transform: 'translateY(-2px)',
                                                 transition: 'all 0.2s',
                                             }}
@@ -172,13 +144,13 @@ const AccountSelectionModal = ({
                                                     <Avatar
                                                         size="md"
                                                         src={account.avatar}
-                                                        name={account.name}
+                                                        name={account.localName}
                                                         mr={4}
                                                     />
                                                     <Box>
-                                                        <Text fontWeight="bold">{account.name}</Text>
+                                                        <Text fontWeight="bold">{account.localName}</Text>
                                                         <Text fontSize="sm" color="gray.500">
-                                                            @{account.name}
+                                                            @{account.localName}
                                                         </Text>
                                                     </Box>
                                                 </Flex>
@@ -216,10 +188,7 @@ const SignInPage: React.FC = () => {
     const {isOpen, onOpen, onClose} = useDisclosure();
     const {
         isConnected,
-        address
     } = useAccount()
-
-    console.log("isConnected", isConnected, address)
 
     const bgGradient = useColorModeValue(
         'linear(to-br, blue.50 0%, purple.50 50%, pink.50 100%)',
@@ -228,6 +197,7 @@ const SignInPage: React.FC = () => {
 
     const cardBg = useColorModeValue('white', 'gray.800');
     const featureBg = useColorModeValue('white', 'gray.800');
+    const textColor = useColorModeValue('gray.600', 'gray.300');
 
     useEffect(() => {
         if (isConnected && !isAuthenticated) {
@@ -284,7 +254,7 @@ const SignInPage: React.FC = () => {
                                 Earn Better.
                             </Heading>
 
-                            <Text fontSize="xl" color={useColorModeValue('gray.600', 'gray.300')}>
+                            <Text fontSize="xl" color={textColor}>
                                 MoodFi is a revolutionary SocialFi platform that rewards users for sharing their daily
                                 mood through selfies.
                                 Using AI-powered mood detection, users earn $NOCX tokens based on the positivity and
@@ -444,7 +414,7 @@ const SignInPage: React.FC = () => {
                                 <Heading size="md" mb={2}>
                                     {feature.title}
                                 </Heading>
-                                <Text color={useColorModeValue('gray.600', 'gray.300')}>
+                                <Text color={textColor}>
                                     {feature.description}
                                 </Text>
                             </Box>

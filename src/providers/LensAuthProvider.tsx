@@ -1,16 +1,22 @@
 import React, {createContext, useCallback, useContext, useEffect, useState,} from 'react';
-import {currentSession, fetchAccountsAvailable} from '@lens-protocol/client/actions';
+import {currentSession} from '@lens-protocol/client/actions';
 import type {AuthenticatedSession, SessionClient} from '@lens-protocol/client';
 import {signMessage} from '@wagmi/core';
 import {APP_ADDRESS, lensPublicClient} from '../constants';
 import {walletConfig} from './WalletProvider';
 import {AccountType, LensAuthContextType} from "../types";
+import {useAccount} from "wagmi";
+import {getLastLoggedInAccount} from "../utils/lens.utils.ts";
 
 const LensAuthContext = createContext<LensAuthContextType | undefined>(undefined);
 
 export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
+    const {
+        address: walletAddress,
+    } = useAccount()
     const [client, setClient] = useState<SessionClient | null>(null);
     const [activeSession, setActiveSession] = useState<AuthenticatedSession | null>(null);
+    const [currentAccount, setCurrentAccount] = useState<AccountType | null>(null);
     const [isAuthenticating, setIsAuthenticating] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -21,6 +27,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
                 setClient(null);
                 setActiveSession(null);
                 setIsAuthenticating(false);
+                setCurrentAccount(null);
                 return;
             }
 
@@ -31,12 +38,16 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
             if (sessionData.isOk()) {
                 setActiveSession(sessionData.value);
             }
+
+            if (walletAddress) {
+                setCurrentAccount(await getLastLoggedInAccount(walletAddress))
+            }
         } catch (err) {
             console.error('Restore failed:', err);
         } finally {
             setIsAuthenticating(false);
         }
-    }, []);
+    }, [walletAddress]);
 
     const authenticate = useCallback(
         async (
@@ -44,6 +55,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
             walletAddr: string
         ) => {
             try {
+                setIsAuthenticating(true)
                 const response = await lensPublicClient.login({
                     accountOwner: {
                         account: lensAccountAddress,
@@ -55,12 +67,14 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
 
                 if (response.isErr()) {
                     console.warn('Authentication failed:', response.error);
+                    setIsAuthenticating(false)
                     return;
                 }
 
                 await restore();
             } catch (err) {
                 console.error('Unexpected login error:', err);
+                setIsAuthenticating(false)
             }
         },
         [restore]
@@ -81,6 +95,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
         } finally {
             setClient(null);
             setActiveSession(null);
+            setCurrentAccount(null)
         }
     }, [client]);
 
@@ -114,33 +129,6 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
         []
     );
 
-    const fetchAvailableLensAccounts = useCallback(async (walletAddress: string): Promise<AccountType[]> => {
-        if (!walletAddress) {
-            return [];
-        }
-        const result = await fetchAccountsAvailable(lensPublicClient, {
-            managedBy: walletAddress,
-            includeOwned: true,
-        });
-
-        console.log("accounts available: ", result);
-
-        if (result.isErr()) {
-            console.error(result.error)
-            return []
-        }
-
-        return result.value.items.map((item) => {
-            return {
-                accountAddress: item.account.address,
-                createdAt: item.account.createdAt,
-                avatar: item.account.metadata?.picture ?? '',
-                name: item.account.metadata?.name ?? '',
-                bio: item.account.metadata?.bio ?? '',
-            }
-        })
-    }, [])
-
     useEffect(() => {
         restore();
     }, [restore]);
@@ -160,7 +148,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
                 disconnect,
                 restore,
                 onboard,
-                fetchAvailableLensAccounts,
+                currentAccount,
             }}
         >
             {children}

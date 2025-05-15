@@ -17,8 +17,7 @@ export const lensPublicMainnetClient = PublicClient.create({
     storage: storage,
 });
 
-// export const APP_ADDRESS = import.meta.env.VITE_APP_ADDRESS || ''
-export const APP_ADDRESS = "0xC75A89145d765c396fd75CbD16380Eb184Bd2ca7"
+export const APP_ADDRESS = import.meta.env.VITE_APP_ADDRESS || ''
 export const WALLETCONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || ''
 export const THIRDWEB_CLIENT_ID = import.meta.env.VITE_THIRDWEB_CLIENT_ID || ''
 export const THIRDWEB_SECRET_KEY = import.meta.env.VITE_THIRDWEB_SECRET_KEY || ''
@@ -31,3 +30,5 @@ export const thirdwebClientServer = createThirdwebClient({
     secretKey: THIRDWEB_SECRET_KEY,
     clientId: THIRDWEB_CLIENT_ID,
 });
+
+console.log('APP_ADDRESS', APP_ADDRESS)

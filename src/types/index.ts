@@ -97,16 +97,43 @@ export type LensAuthContextType = {
   isAuthenticating: boolean;
   isAuthenticated: boolean;
   authenticate: (lensAccountAddress: string, walletAddr: string) => Promise<void>;
-  fetchAvailableLensAccounts: (walletAddress: string) => Promise<AccountType[]>;
   disconnect: () => Promise<void>;
   restore: () => Promise<void>;
   onboard: (walletAddr: string) => Promise<void>;
+  currentAccount: AccountType | null
 };
 
 export interface AccountType {
   accountAddress: string
   createdAt: string
   avatar: string
-  name: string
+  displayName: string
+  localName: string
   bio: string
 }
+
+export interface AccountStatusType {
+  followers: number
+  following: number
+  posts: number
+  comments: number
+  reposts: number
+  quotes: number
+  reacted: number
+  reactions: number
+  collects: number
+}
+
+export interface ProfileDataType {
+  followers: number
+  following: number
+  accountAddress: string
+  createdAt: string
+  avatar: string
+  displayName: string
+  localName: string
+  bio: string
+  isMe: boolean
+  isFollowedByMe: boolean
+}
+

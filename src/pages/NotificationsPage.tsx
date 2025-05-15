@@ -1,22 +1,13 @@
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import {
-  Box,
-  VStack,
-  Heading,
-  Text,
-  Avatar,
-  Flex,
-  useColorModeValue,
-  Divider,
-} from '@chakra-ui/react';
-import { Heart, MessageCircle, UserPlus, Award, Bell } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-import { useSocialStore } from '../store/socialStore';
-import { Notification } from '../types';
+import React, {useEffect} from 'react';
+import {Navigate} from 'react-router-dom';
+import {Avatar, Box, Divider, Flex, Heading, Text, useColorModeValue, VStack,} from '@chakra-ui/react';
+import {Award, Bell, Heart, MessageCircle, UserPlus} from 'lucide-react';
+import {useSocialStore} from '../store/socialStore';
+import {Notification} from '../types';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const NotificationsPage: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
   const { markNotificationsAsRead } = useSocialStore();
   
   // Mock notifications
