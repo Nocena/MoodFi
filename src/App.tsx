@@ -30,7 +30,7 @@ function App() {
                                 <Route index element={<HomePage/>}/>
                                 <Route path="camera" element={<CameraPage/>}/>
                                 <Route path="profile/:name" element={<ProfilePage/>}/>
-                                <Route path="profile/followers" element={<FollowersPage/>}/>
+                                <Route path="profile/:name/followers" element={<FollowersPage/>}/>
                                 <Route path="discover" element={<DiscoverPage/>}/>
                                 <Route path="messages" element={<MessagesPage/>}/>
                                 <Route path="notifications" element={<NotificationsPage/>}/>

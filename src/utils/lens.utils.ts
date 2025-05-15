@@ -4,7 +4,9 @@ import {
     fetchAccount,
     fetchAccountsAvailable,
     fetchAccountStats,
-    lastLoggedInAccount
+    lastLoggedInAccount,
+    fetchFollowing,
+    fetchFollowers,
 } from "@lens-protocol/client/actions";
 
 export const fetchAvailableLensAccounts = async (walletAddress: string): Promise<AccountType[]> => {
@@ -130,5 +132,77 @@ export const getAccountStats = async (accountAddress: string): Promise<AccountSt
     } catch (e) {
         console.log("error getAccountStats", e)
         return null;
+    }
+}
+
+export const getAccountFollowers = async (accountAddress: string): Promise<AccountType[]> => {
+    if (!accountAddress) {
+        return [];
+    }
+
+    try {
+        const result = await fetchFollowers(lensPublicClient, {
+            account: accountAddress,
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        const items = result.value.items
+        if (!items)
+            return []
+
+        return items.map((item) => {
+            return {
+                accountAddress: item.follower.address,
+                createdAt: item.follower.createdAt,
+                avatar: item.follower.metadata?.picture ?? '',
+                displayName: item.follower.metadata?.name ?? '',
+                bio: item.follower.metadata?.bio ?? '',
+                localName: item.follower.username?.localName ?? '',
+                isFollowedByMe: item.follower.operations?.isFollowedByMe ?? false,
+            }
+        })
+    } catch (e) {
+        console.log("error getAccountFollowers", e)
+        return [];
+    }
+}
+
+export const getAccountFollowings = async (accountAddress: string): Promise<AccountType[]> => {
+    if (!accountAddress) {
+        return [];
+    }
+
+    try {
+        const result = await fetchFollowing(lensPublicClient, {
+            account: accountAddress,
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        const items = result.value.items
+        if (!items)
+            return []
+
+        return items.map((item) => {
+            return {
+                accountAddress: item.following.address,
+                createdAt: item.following.createdAt,
+                avatar: item.following.metadata?.picture ?? '',
+                displayName: item.following.metadata?.name ?? '',
+                bio: item.following.metadata?.bio ?? '',
+                localName: item.following.username?.localName ?? '',
+                isFollowedByMe: item.following.operations?.isFollowedByMe ?? false,
+            }
+        })
+    } catch (e) {
+        console.log("error getAccountFollowers", e)
+        return [];
     }
 }

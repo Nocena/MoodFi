@@ -90,7 +90,6 @@ const ProfilePage: React.FC = () => {
             if (profileData.isFollowedByMe) {
                 await unfollow(client!, {
                     account: profileData.accountAddress,
-                    graph: GRAPH_ADDRESS,
                 })
             } else {
                 await follow(client!, {
@@ -230,7 +229,7 @@ const ProfilePage: React.FC = () => {
                             </HStack>
 
                             <HStack spacing={4}>
-                                <Link as={RouterLink} to="/profile/followers#followers">
+                                <Link as={RouterLink} to={`/profile/${name}/followers#followers`}>
                                     <HStack>
                                         <Users size={18}/>
                                         <Text fontSize="sm">
@@ -239,7 +238,7 @@ const ProfilePage: React.FC = () => {
                                     </HStack>
                                 </Link>
                                 <Text fontSize="sm">·</Text>
-                                <Link as={RouterLink} to="/profile/followers#following">
+                                <Link as={RouterLink} to={`/profile/${name}/followers#following`}>
                                     <Text fontSize="sm">
                                         <Text as="span" fontWeight="bold">{profileData?.following}</Text> following
                                     </Text>
