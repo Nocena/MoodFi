@@ -1,35 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Navigate} from 'react-router-dom';
 import {
+  Badge,
   Box,
+  Button,
+  Flex,
   Grid,
   Heading,
-  Text,
-  Button,
-  Image,
-  VStack,
   HStack,
+  Image,
   Input,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Select,
+  Text,
   useColorModeValue,
   useToast,
-  Badge,
-  Select,
-  Flex,
+  VStack,
 } from '@chakra-ui/react';
-import { ethers } from 'ethers';
-import { useAuthStore } from '../store/authStore';
-import { useNFTStore } from '../store/nftStore';
-import { Coins, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import {ethers} from 'ethers';
+import {useNFTStore} from '../store/nftStore';
+import {ChevronLeft, ChevronRight, Coins, Tag} from 'lucide-react';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const MyNFTsPage: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
   const { userNFTs, loadUserNFTs, listNFT, unlistNFT, isLoading, totalUserNFTs } = useNFTStore();
   const [selectedNFT, setSelectedNFT] = useState<string | null>(null);
   const [listingPrice, setListingPrice] = useState('');

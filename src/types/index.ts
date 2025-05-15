@@ -94,9 +94,19 @@ export interface NFTMarketItem {
 export type LensAuthContextType = {
   activeSession: AuthenticatedSession | null;
   client: SessionClient | null;
-  isLoading: boolean;
-  authenticate: (config: any, lensAccount: any, appId: string, walletAddr: string) => Promise<void>;
+  isAuthenticating: boolean;
+  isAuthenticated: boolean;
+  authenticate: (lensAccountAddress: string, walletAddr: string) => Promise<void>;
+  fetchAvailableLensAccounts: (walletAddress: string) => Promise<AccountType[]>;
   disconnect: () => Promise<void>;
   restore: () => Promise<void>;
-  onboard: (params: { appId: string; walletAddr: string }) => Promise<void>;
+  onboard: (walletAddr: string) => Promise<void>;
 };
+
+export interface AccountType {
+  accountAddress: string
+  createdAt: string
+  avatar: string
+  name: string
+  bio: string
+}

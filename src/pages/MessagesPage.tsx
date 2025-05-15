@@ -1,19 +1,12 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
-import {
-  Box,
-  Grid,
-  GridItem,
-  Heading,
-  useBreakpointValue,
-} from '@chakra-ui/react';
-import { useAuthStore } from '../store/authStore';
+import {Navigate} from 'react-router-dom';
+import {Box, Grid, GridItem, Heading, useBreakpointValue,} from '@chakra-ui/react';
 import ConversationList from '../components/messaging/ConversationList';
 import ChatWindow from '../components/messaging/ChatWindow';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const MessagesPage: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
-  
+  const { isAuthenticated } = useLensAuth();
   const isMobile = useBreakpointValue({ base: true, md: false });
   
   if (!isAuthenticated) {

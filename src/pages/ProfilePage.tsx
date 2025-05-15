@@ -1,27 +1,15 @@
-import React, { useState } from 'react';
-import { Navigate, Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Avatar,
-  VStack,
-  HStack,
-  Button,
-  Divider,
-  SimpleGrid,
-  useColorModeValue,
-  Badge,
-  Link,
-} from '@chakra-ui/react';
-import { Calendar, Users, Edit, MapPin } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
+import React, {useState} from 'react';
+import {Link as RouterLink, Navigate} from 'react-router-dom';
+import {Avatar, Box, Button, Flex, Heading, HStack, Link, SimpleGrid, Text, useColorModeValue,} from '@chakra-ui/react';
+import {Calendar, Edit, MapPin, Users} from 'lucide-react';
+import {useAuthStore} from '../store/authStore';
 import MoodCard from '../components/feed/MoodCard';
 import EditProfileModal from '../components/profile/EditProfileModal';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const ProfilePage: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
+  const { user } = useAuthStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   if (!isAuthenticated || !user) {

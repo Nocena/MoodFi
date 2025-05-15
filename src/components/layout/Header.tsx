@@ -18,11 +18,13 @@ import {
 import {useAuthStore} from '../../store/authStore';
 import {useSocialStore} from '../../store/socialStore';
 import {Bell, Camera, Moon, Sun} from 'lucide-react';
+import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
 const Header: React.FC = () => {
   const { isOpen, onToggle } = useDisclosure();
   const { colorMode, toggleColorMode } = useColorMode();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
+  const { user } = useAuthStore();
   const { notifications, unreadNotifications } = useSocialStore();
   
   return (

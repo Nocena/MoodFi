@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Navigate} from 'react-router-dom';
 import {
-  Box,
-  Grid,
-  Heading,
-  Text,
-  Button,
-  Image,
-  VStack,
-  HStack,
   Avatar,
   Badge,
+  Box,
+  Button,
+  Flex,
+  Grid,
+  Heading,
+  HStack,
+  Image,
+  Select,
+  Text,
   useColorModeValue,
   useToast,
-  Flex,
-  Select,
+  VStack,
 } from '@chakra-ui/react';
-import { ethers } from 'ethers';
-import { useAuthStore } from '../store/authStore';
-import { useNFTStore } from '../store/nftStore';
-import { Coins, ChevronLeft, ChevronRight } from 'lucide-react';
+import {ethers} from 'ethers';
+import {useNFTStore} from '../store/nftStore';
+import {ChevronLeft, ChevronRight, Coins} from 'lucide-react';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const NFTMarketplacePage: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
   const { marketItems, loadMarketItems, buyNFT, isLoading, totalMarketItems } = useNFTStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);

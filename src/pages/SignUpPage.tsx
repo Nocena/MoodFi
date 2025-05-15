@@ -1,29 +1,36 @@
-import React, { useState, useRef } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, {useRef, useState} from 'react';
+import {Navigate, useNavigate} from 'react-router-dom';
 import {
-  Box,
-  Container,
-  VStack,
-  Heading,
-  Text,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
   Avatar,
-  IconButton,
-  useColorModeValue,
+  Box,
+  Button,
+  Container,
+  FormControl,
   FormErrorMessage,
-  useToast,
+  FormLabel,
+  Heading,
   HStack,
-  Badge,
+  IconButton,
+  Input,
+  Text,
+  Textarea,
+  useColorModeValue,
+  useToast,
+  VStack,
 } from '@chakra-ui/react';
-import { Camera, ArrowLeft, Wallet } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
+import {ArrowLeft, Camera} from 'lucide-react';
+import {ConnectKitButton} from "connectkit";
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
+import {useAccount} from "wagmi";
+import {uploadMediaToGrove, uploadMetadataToGrove} from "../utils/grove.utils.ts";
+import {account as accountMetadata} from "@lens-protocol/metadata";
+import {createAccountWithUsername} from "@lens-protocol/client/actions"
+import {uri} from "@lens-protocol/client"
 
 const SignUpPage: React.FC = () => {
-  const { isAuthenticated, signup } = useAuthStore();
+  const { isAuthenticated, onboard, client } = useLensAuth();
+  const { address: walletAddress, isConnected: walletConnected } = useAccount()
+  const [avatar, setAvatar] = useState<string | null>(null);
   const navigate = useNavigate();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,11 +41,8 @@ const SignUpPage: React.FC = () => {
     bio: '',
   });
 
-  const [avatar, setAvatar] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -73,34 +77,8 @@ const SignUpPage: React.FC = () => {
     }
   };
 
-  const connectWallet = async () => {
-    setIsLoading(true);
-    try {
-      // Simulate wallet connection
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setWalletConnected(true);
-      setWalletAddress('0x1234...5678'); // Mock wallet address
-      toast({
-        title: 'Wallet Connected',
-        description: 'Your wallet has been successfully connected',
-        status: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: 'Connection Failed',
-        description: 'Failed to connect wallet. Please try again.',
-        status: 'error',
-        duration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
     if (!avatar) {
       newErrors.avatar = 'Please upload a profile picture';
     }
@@ -126,15 +104,31 @@ const SignUpPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() || !walletAddress) {
       return;
     }
 
     setIsLoading(true);
     try {
-      await signup(formData.username, walletAddress, '');
+
+      await onboard(walletAddress)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      const avatarURI = await uploadMediaToGrove(fileInputRef.current.files[0])
+      const metadata = accountMetadata({
+        name: formData.name,
+        bio: formData.bio,
+        picture: avatarURI.uri,
+      });
+      const metadataURI = await uploadMetadataToGrove(metadata);
+      const result = await createAccountWithUsername(client!, {
+        username: { localName: formData.name },
+        metadataUri: uri(metadataURI.uri),
+      });
+      console.log("Account created successfully", result);
       navigate('/');
     } catch (error) {
+      console.error("Failed to create Account", error);
       toast({
         title: 'Error',
         description: 'Failed to create account. Please try again.',
@@ -241,26 +235,7 @@ const SignUpPage: React.FC = () => {
                     <FormControl isInvalid={!!errors.wallet}>
                       <FormLabel>Wallet</FormLabel>
                       <HStack>
-                        {walletConnected ? (
-                            <Badge
-                                colorScheme="green"
-                                p={2}
-                                borderRadius="md"
-                                fontSize="md"
-                            >
-                              Connected: {walletAddress}
-                            </Badge>
-                        ) : (
-                            <Button
-                                leftIcon={<Wallet />}
-                                onClick={connectWallet}
-                                isLoading={isLoading}
-                                colorScheme="purple"
-                                w="full"
-                            >
-                              Connect Wallet
-                            </Button>
-                        )}
+                        <ConnectKitButton label="Connect Wallet" mode="dark" />
                       </HStack>
                       <FormErrorMessage>{errors.wallet}</FormErrorMessage>
                     </FormControl>

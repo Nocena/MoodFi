@@ -1,24 +1,16 @@
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import {
-  Box,
-  Grid,
-  GridItem,
-  Text,
-  Heading,
-  Button,
-  Flex,
-  useBreakpointValue,
-  Skeleton,
-} from '@chakra-ui/react';
-import { Camera } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-import { useMoodStore } from '../store/moodStore';
+import React, {useEffect} from 'react';
+import {Navigate} from 'react-router-dom';
+import {Box, Button, Flex, Grid, GridItem, Heading, Skeleton, Text, useBreakpointValue,} from '@chakra-ui/react';
+import {Camera} from 'lucide-react';
+import {useAuthStore} from '../store/authStore';
+import {useMoodStore} from '../store/moodStore';
 import MoodCard from '../components/feed/MoodCard';
 import SuggestedUsers from '../components/feed/SuggestedUsers';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
+  const { user } = useAuthStore();
   const { 
     dailyMood, 
     getDailyMood, 

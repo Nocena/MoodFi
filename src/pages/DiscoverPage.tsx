@@ -1,26 +1,12 @@
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import {
-  Box,
-  Grid,
-  GridItem,
-  Heading,
-  Text,
-  useBreakpointValue,
-  SimpleGrid,
-  Flex,
-  Avatar,
-  Button,
-  Badge,
-  useColorModeValue,
-} from '@chakra-ui/react';
-import { useAuthStore } from '../store/authStore';
-import { useMoodStore } from '../store/moodStore';
-import { useSocialStore } from '../store/socialStore';
-import SuggestedUsers from '../components/feed/SuggestedUsers';
+import React, {useEffect} from 'react';
+import {Navigate} from 'react-router-dom';
+import {Avatar, Badge, Box, Button, Flex, Heading, SimpleGrid, Text, useColorModeValue,} from '@chakra-ui/react';
+import {useMoodStore} from '../store/moodStore';
+import {useSocialStore} from '../store/socialStore';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const DiscoverPage: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
   const { dailyMood, getSuggestedUsers, suggestedUsers } = useMoodStore();
   const { followUser } = useSocialStore();
 

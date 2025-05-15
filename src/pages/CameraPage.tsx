@@ -1,17 +1,12 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
-import {
-  Box,
-  Heading,
-  Text,
-  Container,
-} from '@chakra-ui/react';
-import { useAuthStore } from '../store/authStore';
+import {Navigate} from 'react-router-dom';
+import {Box, Container, Heading, Text,} from '@chakra-ui/react';
 import CameraComponent from '../components/camera/CameraComponent';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const CameraPage: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
-  
+  const { isAuthenticated } = useLensAuth();
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }

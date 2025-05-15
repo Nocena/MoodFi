@@ -1,24 +1,18 @@
-import React, {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    useCallback,
-} from 'react';
-import { currentSession } from '@lens-protocol/client/actions';
-import type { SessionClient, AuthenticatedSession } from '@lens-protocol/client';
-import { signMessage } from '@wagmi/core';
-import { lensPublicClient } from '../constants';
-import { walletConfig } from './WalletProvider';
-import {LensAuthContextType} from "../types";
+import React, {createContext, useCallback, useContext, useEffect, useState,} from 'react';
+import {currentSession, fetchAccountsAvailable} from '@lens-protocol/client/actions';
+import type {AuthenticatedSession, SessionClient} from '@lens-protocol/client';
+import {signMessage} from '@wagmi/core';
+import {APP_ADDRESS, lensPublicClient} from '../constants';
+import {walletConfig} from './WalletProvider';
+import {AccountType, LensAuthContextType} from "../types";
 
 const LensAuthContext = createContext<LensAuthContextType | undefined>(undefined);
 
-export const LensAuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
     const [client, setClient] = useState<SessionClient | null>(null);
     const [activeSession, setActiveSession] = useState<AuthenticatedSession | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [mounted, setMounted] = useState(false);
+    const [isAuthenticating, setIsAuthenticating] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const restore = useCallback(async () => {
         try {
@@ -26,7 +20,7 @@ export const LensAuthProvider = ({ children }: { children: React.ReactNode }) =>
             if (result.isErr()) {
                 setClient(null);
                 setActiveSession(null);
-                setIsLoading(false);
+                setIsAuthenticating(false);
                 return;
             }
 
@@ -40,25 +34,23 @@ export const LensAuthProvider = ({ children }: { children: React.ReactNode }) =>
         } catch (err) {
             console.error('Restore failed:', err);
         } finally {
-            setIsLoading(false);
+            setIsAuthenticating(false);
         }
     }, []);
 
     const authenticate = useCallback(
         async (
-            config: any,
-            lensAccount: any,
-            appId: string,
+            lensAccountAddress: string,
             walletAddr: string
         ) => {
             try {
                 const response = await lensPublicClient.login({
                     accountOwner: {
-                        account: lensAccount.address,
-                        app: appId,
+                        account: lensAccountAddress,
+                        app: APP_ADDRESS,
                         owner: walletAddr,
                     },
-                    signMessage: (message: string) => signMessage(config, { message }),
+                    signMessage: (message: string) => signMessage(walletConfig, {message}),
                 });
 
                 if (response.isErr()) {
@@ -93,14 +85,14 @@ export const LensAuthProvider = ({ children }: { children: React.ReactNode }) =>
     }, [client]);
 
     const onboard = useCallback(
-        async ({ appId, walletAddr }: { appId: string; walletAddr: string }) => {
+        async (walletAddr: string) => {
             try {
                 const response = await lensPublicClient.login({
                     onboardingUser: {
-                        app: appId,
+                        app: APP_ADDRESS,
                         wallet: walletAddr,
                     },
-                    signMessage: (message: string) => signMessage(walletConfig, { message }),
+                    signMessage: (message: string) => signMessage(walletConfig, {message}),
                 });
 
                 if (response.isErr()) {
@@ -122,26 +114,53 @@ export const LensAuthProvider = ({ children }: { children: React.ReactNode }) =>
         []
     );
 
+    const fetchAvailableLensAccounts = useCallback(async (walletAddress: string): Promise<AccountType[]> => {
+        if (!walletAddress) {
+            return [];
+        }
+        const result = await fetchAccountsAvailable(lensPublicClient, {
+            managedBy: walletAddress,
+            includeOwned: true,
+        });
+
+        console.log("accounts available: ", result);
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        return result.value.items.map((item) => {
+            return {
+                accountAddress: item.account.address,
+                createdAt: item.account.createdAt,
+                avatar: item.account.metadata?.picture ?? '',
+                name: item.account.metadata?.name ?? '',
+                bio: item.account.metadata?.bio ?? '',
+            }
+        })
+    }, [])
+
     useEffect(() => {
         restore();
     }, [restore]);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) return null;
+        setIsAuthenticated(!!activeSession);
+    }, [activeSession])
 
     return (
         <LensAuthContext.Provider
             value={{
+                isAuthenticated,
                 activeSession,
                 client,
-                isLoading,
+                isAuthenticating,
                 authenticate,
                 disconnect,
                 restore,
                 onboard,
+                fetchAvailableLensAccounts,
             }}
         >
             {children}

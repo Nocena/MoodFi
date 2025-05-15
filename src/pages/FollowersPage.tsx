@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, {useState} from 'react';
+import {Navigate, useLocation} from 'react-router-dom';
 import {
-  Box,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
   Avatar,
-  Text,
+  Box,
   Button,
-  VStack,
-  HStack,
   Divider,
+  HStack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
   useColorModeValue,
+  VStack,
 } from '@chakra-ui/react';
-import { useAuthStore } from '../store/authStore';
-import { useSocialStore } from '../store/socialStore';
+import {useAuthStore} from '../store/authStore';
+import {useSocialStore} from '../store/socialStore';
+import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const FollowersPage: React.FC = () => {
   const location = useLocation();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useLensAuth();
+  const { user } = useAuthStore();
   const { followUser } = useSocialStore();
   const [activeTab, setActiveTab] = useState(location.hash === '#following' ? 1 : 0);
 
