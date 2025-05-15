@@ -99,7 +99,8 @@ export type LensAuthContextType = {
   authenticate: (lensAccountAddress: string, walletAddr: string) => Promise<void>;
   disconnect: () => Promise<void>;
   restore: () => Promise<void>;
-  onboard: (walletAddr: string) => Promise<void>;
+  refreshCurrentAccount: () => Promise<void>;
+  onboard: (walletAddr: string) => Promise<SessionClient | null>;
   currentAccount: AccountType | null
 };
 
@@ -110,6 +111,7 @@ export interface AccountType {
   displayName: string
   localName: string
   bio: string
+  isFollowedByMe?: boolean
 }
 
 export interface AccountStatusType {

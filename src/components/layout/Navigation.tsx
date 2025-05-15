@@ -61,7 +61,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon, children, to, isActive }) => {
 const Navigation: React.FC = () => {
   const location = useLocation();
   const {currentAccount} = useLensAuth()
-  
+  console.log("currentAccount",currentAccount)
   const navigationItems = useMemo(() => {
     return [
       { name: 'Home', icon: Home, path: '/' },

@@ -59,6 +59,7 @@ export const fetchAccountByUserName = async (userName: string): Promise<AccountT
         displayName: item!.metadata?.name ?? '',
         localName: item!.username?.localName ?? '',
         bio: item!.metadata?.bio ?? '',
+        isFollowedByMe: item!.operations?.isFollowedByMe ?? false,
     }
 }
 

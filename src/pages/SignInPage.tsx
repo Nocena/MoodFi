@@ -148,7 +148,7 @@ const AccountSelectionModal = ({
                                                         mr={4}
                                                     />
                                                     <Box>
-                                                        <Text fontWeight="bold">{account.localName}</Text>
+                                                        <Text fontWeight="bold">{account.displayName}</Text>
                                                         <Text fontSize="sm" color="gray.500">
                                                             @{account.localName}
                                                         </Text>

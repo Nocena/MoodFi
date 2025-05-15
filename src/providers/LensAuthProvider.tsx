@@ -13,7 +13,12 @@ const LensAuthContext = createContext<LensAuthContextType | undefined>(undefined
 export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
     const {
         address: walletAddress,
+        connector,
+        isConnected,
     } = useAccount()
+
+    console.log("walletAddress", walletAddress, isConnected)
+
     const [client, setClient] = useState<SessionClient | null>(null);
     const [activeSession, setActiveSession] = useState<AuthenticatedSession | null>(null);
     const [currentAccount, setCurrentAccount] = useState<AccountType | null>(null);
@@ -46,6 +51,16 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
             console.error('Restore failed:', err);
         } finally {
             setIsAuthenticating(false);
+        }
+    }, [walletAddress]);
+
+    const refreshCurrentAccount = useCallback(async () => {
+        try {
+            if (walletAddress) {
+                setCurrentAccount(await getLastLoggedInAccount(walletAddress))
+            }
+        } catch (err) {
+            console.error('refreshCurrentAccount error:', err);
         }
     }, [walletAddress]);
 
@@ -90,6 +105,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
                     await result.value.logout();
                 }
             }
+            connector?.disconnect()
         } catch (err) {
             console.error('Logout failed:', err);
         } finally {
@@ -97,10 +113,10 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
             setActiveSession(null);
             setCurrentAccount(null)
         }
-    }, [client]);
+    }, [client, connector]);
 
     const onboard = useCallback(
-        async (walletAddr: string) => {
+        async (walletAddr: string): Promise<SessionClient | null> => {
             try {
                 const response = await lensPublicClient.login({
                     onboardingUser: {
@@ -112,7 +128,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
 
                 if (response.isErr()) {
                     console.warn('Onboarding login failed:', response.error);
-                    return;
+                    return null;
                 }
 
                 const newClient = response.value;
@@ -122,16 +138,20 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
                 if (sessionData.isOk()) {
                     setActiveSession(sessionData.value);
                 }
+
+                return newClient
             } catch (err) {
                 console.error('Onboarding error:', err);
             }
+
+            return null
         },
         []
     );
 
     useEffect(() => {
         restore();
-    }, [restore]);
+    }, [restore, walletAddress]);
 
     useEffect(() => {
         setIsAuthenticated(!!activeSession);
@@ -149,6 +169,7 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
                 restore,
                 onboard,
                 currentAccount,
+                refreshCurrentAccount,
             }}
         >
             {children}

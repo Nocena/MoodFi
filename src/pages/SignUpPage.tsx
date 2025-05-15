@@ -26,9 +26,10 @@ import {uploadMediaToGrove, uploadMetadataToGrove} from "../utils/grove.utils.ts
 import {account as accountMetadata} from "@lens-protocol/metadata";
 import {createAccountWithUsername} from "@lens-protocol/client/actions"
 import {uri} from "@lens-protocol/client"
+import {fetchAccountByUserName} from "../utils/lens.utils.ts";
 
 const SignUpPage: React.FC = () => {
-  const { isAuthenticated, onboard, client } = useLensAuth();
+  const { isAuthenticated, onboard, refreshCurrentAccount, disconnect } = useLensAuth();
   const { address: walletAddress, isConnected: walletConnected } = useAccount()
   const [avatar, setAvatar] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -108,9 +109,22 @@ const SignUpPage: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
     try {
-      await onboard(walletAddress)
+      setIsLoading(true);
+      const existingAccount = await fetchAccountByUserName(formData.username)
+      if (existingAccount) {
+        setErrors({
+          username: 'This username is already in use',
+        })
+        setIsLoading(false);
+        return
+      }
+
+      setErrors({})
+      const newClient = await onboard(walletAddress)
+
+      if (!newClient)
+        throw new Error(`Can't onboard user`)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       const avatarURI = await uploadMediaToGrove(fileInputRef.current.files[0])
@@ -120,20 +134,22 @@ const SignUpPage: React.FC = () => {
         picture: avatarURI.uri,
       });
       const metadataURI = await uploadMetadataToGrove(metadata);
-      const result = await createAccountWithUsername(client!, {
-        username: { localName: formData.name },
+      const result = await createAccountWithUsername(newClient, {
+        username: { localName: formData.username },
         metadataUri: uri(metadataURI.uri),
       });
       console.log("Account created successfully", result);
+      await refreshCurrentAccount()
       navigate('/');
     } catch (error) {
       console.error("Failed to create Account", error);
       toast({
         title: 'Error',
-        description: 'Failed to create account. Please try again.',
+        description: 'Failed to create account(please check if you have enough wallet balance to create your profile). Please try again.',
         status: 'error',
         duration: 5000,
       });
+      await disconnect()
     } finally {
       setIsLoading(false);
     }
