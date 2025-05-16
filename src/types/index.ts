@@ -112,6 +112,7 @@ export interface AccountType {
   localName: string
   bio: string
   isFollowedByMe?: boolean
+  chosenMood?: MOOD_TYPE
 }
 
 export interface MoodPostType {
@@ -154,5 +155,10 @@ export interface ProfileDataType {
   isMe: boolean
   isFollowedByMe: boolean
 }
+
+export type AuthorWithMood = AccountType & {
+  moodType: MOOD_TYPE;          // latest post’s mood
+  latestTimestamp: string;   // ISO string from latest post
+};
 
 export const LOCAL_STORAGE_LAST_MOOD_TAKEN_TIME = 'last-mood-time'
