@@ -47,7 +47,7 @@ const CameraComponent: React.FC = () => {
     const {
         detectMood,
         dailyMood,
-        todaysMoodTaken,
+        todayMoodTaken,
         isProcessing,
     } = useMoodStore();
 
@@ -219,7 +219,7 @@ const CameraComponent: React.FC = () => {
 
     const whiteGrayColor = useColorModeValue('white', 'gray.800')
 
-    if (todaysMoodTaken) {
+    if (todayMoodTaken) {
         return (
             <Center py={10}>
                 <VStack spacing={4}>

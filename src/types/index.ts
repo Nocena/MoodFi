@@ -114,6 +114,22 @@ export interface AccountType {
   isFollowedByMe?: boolean
 }
 
+export interface MoodPostType {
+  id: string
+  author: AccountType
+  content: string // item.metadata.content
+  imageUrl: string // item.metadata.image.item
+
+  // item.metadata.attributes
+  moodType: MOOD_TYPE
+  confidence: number
+  rewardTokenAmount: number
+
+  commentsCount: number // item.stats.comments
+  likesCount: number // item.stats.upvotes
+  timestamp: string // item.timestamp
+}
+
 export interface AccountStatusType {
   followers: number
   following: number
@@ -138,3 +154,5 @@ export interface ProfileDataType {
   isMe: boolean
   isFollowedByMe: boolean
 }
+
+export const LOCAL_STORAGE_LAST_MOOD_TAKEN_TIME = 'last-mood-time'

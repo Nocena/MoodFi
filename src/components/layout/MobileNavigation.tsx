@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Flex,
@@ -11,8 +11,9 @@ import {
   Compass,
   Camera,
   User,
-  MessageSquare
+  MessageSquare, Bell, Coins, Image as ImageIcon
 } from 'lucide-react';
+import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -40,15 +41,19 @@ const MobileNavItem: React.FC<NavItemProps> = ({ icon, to, isActive }) => {
 
 const MobileNavigation: React.FC = () => {
   const location = useLocation();
-  
-  const navigationItems = [
-    { icon: Home, path: '/' },
-    { icon: Compass, path: '/discover' },
-    { icon: Camera, path: '/camera' },
-    { icon: MessageSquare, path: '/messages' },
-    { icon: User, path: '/profile' },
-  ];
-  
+  const {currentAccount} = useLensAuth()
+
+  const navigationItems = useMemo(() => {
+    return [
+      { icon: Home, path: '/' },
+      { icon: Compass, path: '/discover' },
+      { icon: Camera, path: '/camera' },
+      { icon: MessageSquare, path: '/messages' },
+      { icon: User, path: `/profile/${currentAccount?.localName}` },
+    ]
+  }, [currentAccount])
+
+
   return (
     <Flex h="16" align="center" justify="space-around">
       {navigationItems.map((item) => (
