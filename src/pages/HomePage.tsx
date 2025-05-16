@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate, useNavigate} from 'react-router-dom';
 import {Box, Button, Flex, Grid, GridItem, Heading, Skeleton, Text, useBreakpointValue,} from '@chakra-ui/react';
 import {Camera} from 'lucide-react';
 import {useAuthStore} from '../store/authStore';
@@ -10,6 +10,7 @@ import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useLensAuth();
+  const navigate = useNavigate()
   const { user } = useAuthStore();
   const { 
     dailyMood, 
@@ -56,9 +57,10 @@ const HomePage: React.FC = () => {
               </Text>
               <Button
                 as="a"
-                href="/camera"
+                onClick={() => navigate('/camera')}
                 leftIcon={<Camera size={18} />}
                 colorScheme="brand"
+                cursor="pointer"
               >
                 Take Selfie
               </Button>

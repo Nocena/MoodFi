@@ -1,46 +1,35 @@
 import React from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {
-  Box,
-  Flex,
-  Text,
-  IconButton,
-  Button,
-  Stack,
-  Icon,
-  useColorModeValue,
-  useBreakpointValue,
-  useDisclosure,
-  useColorMode,
   Avatar,
-  HStack,
   Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Image,
   Menu,
   MenuButton,
-  MenuList,
-  MenuItem,
   MenuDivider,
+  MenuItem,
+  MenuList,
+  Stack,
+  Text,
+  useBreakpointValue,
+  useColorMode,
+  useColorModeValue,
 } from '@chakra-ui/react';
-import { useAuthStore } from '../../store/authStore';
-import { useSocialStore } from '../../store/socialStore';
-import {
-  Camera,
-  Bell,
-  Moon,
-  Sun,
-  Sparkles,
-  User,
-  Settings,
-  LogOut,
-} from 'lucide-react';
+import {useAuthStore} from '../../store/authStore';
+import {useSocialStore} from '../../store/socialStore';
+import {Bell, Camera, LogOut, Moon, Settings, Sun, User,} from 'lucide-react';
 import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
 const Header: React.FC = () => {
-  const { isOpen, onToggle } = useDisclosure();
   const { colorMode, toggleColorMode } = useColorMode();
   const {disconnect, isAuthenticated} = useLensAuth()
   const { user} = useAuthStore();
-  const { notifications, unreadNotifications } = useSocialStore();
+  const { unreadNotifications } = useSocialStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -73,12 +62,7 @@ const Header: React.FC = () => {
                 as={RouterLink}
                 to="/"
             >
-              <Icon
-                  as={Sparkles}
-                  boxSize={6}
-                  color="brand.500"
-                  _dark={{ color: 'brand.300' }}
-              />
+              <Image width={10} src="./moodfi-logo.png"/>
               <Text
                   textAlign={useBreakpointValue({ base: 'left', md: 'left' })}
                   fontFamily={'heading'}

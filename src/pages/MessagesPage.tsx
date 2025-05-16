@@ -21,7 +21,7 @@ const MessagesPage: React.FC = () => {
                 templateColumns={{ base: "1fr", md: "300px 1fr" }}
                 gap={4}
                 h={{ base: "auto", md: "calc(100vh - 200px)" }}
-                filter="blur(4px)"
+                filter="blur(1px)"
                 pointerEvents="none"
             >
                 <GridItem
@@ -48,7 +48,7 @@ const MessagesPage: React.FC = () => {
                 right={0}
                 bottom={0}
                 bg="rgba(0, 0, 0, 0.7)"
-                backdropFilter="blur(8px)"
+                backdropFilter="blur(1px)"
                 borderRadius="lg"
             >
                 <VStack spacing={6}>
