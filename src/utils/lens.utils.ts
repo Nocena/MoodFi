@@ -1,13 +1,18 @@
-import {APP_ADDRESS, lensPublicClient} from "../constants";
-import {AccountStatusType, AccountType} from "../types";
+import {APP_ADDRESS, FEED_ADDRESS, lensPublicClient} from "../constants";
+import {AccountStatusType, AccountType, MOOD_TYPE} from "../types";
 import {
     fetchAccount,
     fetchAccountsAvailable,
     fetchAccountStats,
-    lastLoggedInAccount,
-    fetchFollowing,
     fetchFollowers,
+    fetchFollowing,
+    lastLoggedInAccount,
+    post,
 } from "@lens-protocol/client/actions";
+
+import {image, MediaImageMimeType, MetadataAttributeType,} from "@lens-protocol/metadata"
+import {uploadMediaToGrove, uploadMetadataToGrove} from "./grove.utils.ts";
+import {SessionClient, uri} from "@lens-protocol/client";
 
 export const fetchAvailableLensAccounts = async (walletAddress: string): Promise<AccountType[]> => {
     if (!walletAddress) {
@@ -205,4 +210,51 @@ export const getAccountFollowings = async (accountAddress: string): Promise<Acco
         console.log("error getAccountFollowers", e)
         return [];
     }
+}
+
+export const postDailyMood = async (
+    sessionClient: SessionClient,
+    imageFile: File,
+    moodType: MOOD_TYPE,
+    confidence: number,
+    rewardTokenAmount: number,
+    content: string | null) => {
+    try {
+        const imageURI = await uploadMediaToGrove(imageFile)
+        const metadata = image({
+            ...(content ? {content} : {}),
+            attributes: [
+                {
+                    value: moodType,
+                    type: MetadataAttributeType.STRING,
+                    key: 'moodType',
+                },
+                {
+                    value: confidence.toString(),
+                    type: MetadataAttributeType.NUMBER,
+                    key: 'confidence',
+                },
+                {
+                    value: rewardTokenAmount.toString(),
+                    type: MetadataAttributeType.NUMBER,
+                    key: 'rewardTokenAmount',
+                },
+            ],
+            image: {
+                item: imageURI.uri,
+                type: imageFile.type as MediaImageMimeType,
+            },
+        });
+
+        const metadataURI = await uploadMetadataToGrove(metadata);
+        const result = await post(sessionClient, {
+            contentUri: uri(metadataURI.uri),
+            feed: FEED_ADDRESS,
+        });
+        return !result.isErr();
+    } catch (e) {
+        console.log('error', e)
+    }
+
+    return false
 }
