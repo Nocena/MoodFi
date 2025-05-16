@@ -19,6 +19,7 @@ export const lensPublicMainnetClient = PublicClient.create({
 
 export const APP_ADDRESS = import.meta.env.VITE_APP_ADDRESS || '0xc901aD3b1c331d9D5ab9C685D4D34C448dd4F03A'
 export const GRAPH_ADDRESS = import.meta.env.VITE_GRAPH_ADDRESS || '0x26a33b3feA154692b33a3024982F4b5E5F1Fe176'
+export const FEED_ADDRESS = import.meta.env.VITE_FEED_ADDRESS || '0xD82fAf1259c852CBa6A128DAF2ec5f758F3415Fa'
 export const WALLETCONNECT_PROJECT_ID = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || ''
 export const THIRDWEB_CLIENT_ID = import.meta.env.VITE_THIRDWEB_CLIENT_ID || ''
 export const THIRDWEB_SECRET_KEY = import.meta.env.VITE_THIRDWEB_SECRET_KEY || ''

@@ -21,7 +21,7 @@ export interface User {
 export interface MoodEntry {
   id: string;
   date: string;
-  mood: Mood;
+  mood: MOOD_TYPE;
   photo: string;
   reward: boolean;
   comments: Comment[];
@@ -31,7 +31,7 @@ export interface MoodEntry {
   nftData?: NFT;
 }
 
-export type Mood = 'happy' | 'sad' | 'excited' | 'calm' | 'neutral';
+export type MOOD_TYPE = 'happy' | 'sad' | 'excited' | 'calm' | 'neutral';
 
 export interface Comment {
   id: string;
@@ -68,7 +68,7 @@ export interface Notification {
 
 export interface DailyMood {
   date: string;
-  mood: Mood;
+  mood: MOOD_TYPE;
 }
 
 export interface NFT {
@@ -138,4 +138,3 @@ export interface ProfileDataType {
   isMe: boolean
   isFollowedByMe: boolean
 }
-
