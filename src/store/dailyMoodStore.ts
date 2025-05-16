@@ -1,8 +1,13 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { isSameDay } from 'date-fns'
-import {AccountType, MoodPostType} from "../types";
-import {fetchRecommendedAccounts, getAccountPosts, getGlobalPosts} from "../utils/lens.utils.ts";
+import {AccountType, AuthorWithMood, MOOD_TYPE, MoodPostType} from "../types";
+import {
+    fetchRecommendedAccounts,
+    getAccountPosts,
+    getGlobalPosts,
+    getSimilarMoodAccounts
+} from "../utils/lens.utils.ts";
 
 interface MoodData {
     moodTime: string
@@ -16,15 +21,17 @@ interface MoodState {
     globalPosts: MoodPostType[]
     userPosts: MoodPostType[]
     recommendAccounts: AccountType[]
+    similarMoodAccounts: AuthorWithMood[]
     setMoodData: (data: MoodData) => void
     resetMood: () => void
     isLoadingGlobalPosts: boolean
     isLoadingUserPosts: boolean
     isLoadingRecommendAccounts: boolean
+    isLoadingSimilarAccounts: boolean
     refreshGlobalPosts: (exceptAccountAddress: string) => Promise<void>
     refreshUserPosts: (accountAddress: string) => Promise<void>
     refreshRecommendAccounts: (accountAddress: string) => Promise<void>
-
+    refreshSimilarAccounts: (exceptAccountAddress: string, giveMoodType: MOOD_TYPE | null) => Promise<void>
 }
 
 export const useDailyMoodStore = create<MoodState>()(
@@ -34,9 +41,11 @@ export const useDailyMoodStore = create<MoodState>()(
             globalPosts: [],
             userPosts: [],
             recommendAccounts: [],
+            similarMoodAccounts: [],
             isLoadingGlobalPosts: false,
             isLoadingUserPosts: false,
             isLoadingRecommendAccounts: false,
+            isLoadingSimilarAccounts: false,
             setMoodData: (data) => {
                 set({ moodData: data })
             },
@@ -75,9 +84,21 @@ export const useDailyMoodStore = create<MoodState>()(
                     const accounts = await fetchRecommendedAccounts(accountAddress)
                     set({ recommendAccounts: accounts })
                 } catch (e) {
-                    console.error('Failed to fetch recommended accountss', e)
+                    console.error('Failed to fetch recommended accounts', e)
                 } finally {
                     set({ isLoadingRecommendAccounts: false })
+                }
+            },
+
+            refreshSimilarAccounts: async (exceptAccountAddress: string, giveMoodType: MOOD_TYPE | null) => {
+                set({ isLoadingSimilarAccounts: true })
+                try {
+                    const accounts = await getSimilarMoodAccounts(exceptAccountAddress, giveMoodType)
+                    set({ similarMoodAccounts: accounts })
+                } catch (e) {
+                    console.error('Failed to fetch similar accounts', e)
+                } finally {
+                    set({ isLoadingSimilarAccounts: false })
                 }
             },
         }),

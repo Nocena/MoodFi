@@ -27,14 +27,18 @@ const SuggestedUsers: React.FC = () => {
     const {
         isLoadingRecommendAccounts,
         recommendAccounts,
-        refreshRecommendAccounts
+        refreshRecommendAccounts,
+        isLoadingSimilarAccounts,
+        similarMoodAccounts,
+        refreshSimilarAccounts,
     } = useDailyMoodStore()
 
     useEffect(() => {
         if (currentAccount) {
             refreshRecommendAccounts(currentAccount.accountAddress)
+            refreshSimilarAccounts(currentAccount.accountAddress, null)
         }
-    }, [currentAccount])
+    }, [currentAccount, refreshRecommendAccounts, refreshSimilarAccounts])
 
 
     const handleFollow = async (userId: string) => {
@@ -46,7 +50,83 @@ const SuggestedUsers: React.FC = () => {
     };
 
     return (
-        <div>
+        <VStack spacing={4}>
+            <Box
+                bg={bgColor}
+                borderWidth="1px"
+                borderColor={borderColor}
+                borderRadius="lg"
+                overflow="hidden"
+                width="100%"
+                boxShadow="sm"
+            >
+                <Box p={4} bg={useColorModeValue('brand.50', 'rgba(88, 28, 255, 0.15)')}>
+                    <Text fontSize="lg" fontWeight="bold">
+                        Same Mood Friends
+                    </Text>
+                    <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.300')}>
+                        People who are sharing your mood today
+                    </Text>
+                </Box>
+
+                {
+                    isLoadingSimilarAccounts ? (
+                        <Flex margin="2" direction="column" gap={4}>
+                            <Skeleton height="60px" borderRadius="lg"/>
+                        </Flex>
+                    ) : (
+                        <VStack spacing={0} divider={<Divider/>}>
+
+                            {similarMoodAccounts.map((user) => (
+                                <Flex
+                                    key={user.accountAddress}
+                                    p={4}
+                                    w="100%"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                >
+                                    <HStack>
+                                        <Avatar size="md" src={user.avatar} name={user.displayName}/>
+                                        <VStack spacing={0} alignItems="flex-start">
+                                            <Text fontWeight="medium">{user.displayName}</Text>
+                                            <Text
+                                                cursor="pointer"
+                                                fontSize="sm"
+                                                color="gray.500"
+                                                className="username-ellipsis"
+                                                onClick={() => navigate(`/profile/${user.localName}`)}
+                                                _hover={{color: 'gray.700'}}>@{user.localName}</Text>
+                                            <Badge
+                                                colorScheme={getMoodColor(user.moodType)}
+                                                mt={1}
+                                                size="sm"
+                                            >
+                                                {user.moodType.toUpperCase()}
+                                            </Badge>
+                                        </VStack>
+                                    </HStack>
+
+                                    <Button
+                                        size="sm"
+                                        colorScheme="brand"
+                                        variant="outline"
+                                        onClick={() => handleFollow(user.accountAddress)}
+                                    >
+                                        Follow
+                                    </Button>
+                                </Flex>
+                            ))}
+
+                            {similarMoodAccounts.length === 0 && (
+                                <Box p={4} textAlign="center">
+                                    <Text color="gray.500">No similar users found</Text>
+                                </Box>
+                            )}
+                        </VStack>
+                    )
+                }
+            </Box>
+
             <Box
                 bg={bgColor}
                 borderWidth="1px"
@@ -54,6 +134,7 @@ const SuggestedUsers: React.FC = () => {
                 borderRadius="lg"
                 overflow="hidden"
                 boxShadow="sm"
+                width="100%"
             >
                 <Box p={4} bg={useColorModeValue('brand.50', 'rgba(88, 28, 255, 0.15)')}>
                     <Text fontSize="lg" fontWeight="bold">
@@ -64,8 +145,8 @@ const SuggestedUsers: React.FC = () => {
                 {
                     isLoadingRecommendAccounts ? (
                         <Flex margin="2" direction="column" gap={4}>
-                            <Skeleton height="80px" borderRadius="lg"/>
-                            <Skeleton height="80px" borderRadius="lg"/>
+                            <Skeleton height="60px" borderRadius="lg"/>
+                            <Skeleton height="60px" borderRadius="lg"/>
                         </Flex>
                     ) : (
                         <VStack spacing={0} divider={<Divider/>}>
@@ -174,7 +255,7 @@ const SuggestedUsers: React.FC = () => {
           </Box>
 */}
 
-        </div>
+        </VStack>
     );
 };
 

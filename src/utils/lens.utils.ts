@@ -1,5 +1,5 @@
 import {APP_ADDRESS, FEED_ADDRESS, lensPublicClient} from "../constants";
-import {AccountStatusType, AccountType, MOOD_TYPE, MoodPostType} from "../types";
+import {AccountStatusType, AccountType, AuthorWithMood, MOOD_TYPE, MoodPostType} from "../types";
 import {
     fetchAccount, fetchAccountRecommendations,
     fetchAccountsAvailable,
@@ -328,6 +328,70 @@ export const getAccountPosts = async (accountAddress: string): Promise<MoodPostT
         return items.map((item) => getMoodPostDataByRaw(item))
     } catch (e) {
         console.log("error getAccountPosts", e)
+        return [];
+    }
+}
+
+export const getSimilarMoodAccounts = async (exceptAccountAddress: string, givenMoodType: MOOD_TYPE | null): Promise<AuthorWithMood[]> => {
+    try {
+        const result = await fetchPosts(lensPublicClient, {
+            pageSize: "FIFTY",
+            filter: {
+                feeds: [{
+                    feed: FEED_ADDRESS as EvmAddress,
+                }],
+            },
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        const items = result.value.items
+        if (!items)
+            return []
+
+        const posts = items.map((item) => getMoodPostDataByRaw(item)).filter(item => item.author.accountAddress !== exceptAccountAddress)
+
+        const authorMap = new Map<string, AuthorWithMood>();
+
+        for (const post of posts) {
+            const {
+                author,
+                moodType,
+                timestamp,
+            } = post;
+
+            const existing = authorMap.get(author.accountAddress);
+
+            // If we’ve never seen this author or this post is newer → update
+            if (
+                !existing ||
+                new Date(timestamp).getTime() > new Date(existing.latestTimestamp).getTime()
+            ) {
+                authorMap.set(author.accountAddress, {
+                    ...author,
+                    moodType,
+                    latestTimestamp: timestamp,
+                });
+            }
+        }
+
+        // Convert to array and sort
+        return Array.from(authorMap.values()).sort((a, b) => {
+            const aIsPriority = a.moodType === givenMoodType ? 0 : 1;
+            const bIsPriority = b.moodType === givenMoodType ? 0 : 1;
+
+            if (aIsPriority !== bIsPriority) {
+                return aIsPriority - bIsPriority;           // 0 before 1 → priority first
+            }
+            // tie‑breaker: newest author first
+            return new Date(b.latestTimestamp).getTime() - new Date(a.latestTimestamp).getTime();
+        });
+
+    } catch (e) {
+        console.log("error getSimilarMoodAccounts", e)
         return [];
     }
 }
