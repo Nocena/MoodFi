@@ -15,7 +15,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Progress,
   Spinner,
   Text,
   Textarea,
@@ -38,7 +37,6 @@ const CameraComponent: React.FC = () => {
   const [rewardAmount, setRewardAmount] = useState<number>(0);
   const [description, setDescription] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showRewardAnimation, setShowRewardAnimation] = useState(false);
 
   const {
     detectMood,
@@ -116,11 +114,8 @@ const CameraComponent: React.FC = () => {
       setIsModalOpen(true);
       setIsAnalyzing(false);
 
-      // Start reward animation
-      setShowRewardAnimation(true);
-      setTimeout(() => setShowRewardAnimation(false), 2000);
-
     } catch (error) {
+      console.log("error", error)
       toast({
         title: "Error",
         description: "Failed to analyze your mood",
@@ -149,6 +144,7 @@ const CameraComponent: React.FC = () => {
       setIsModalOpen(false);
 
     } catch (error) {
+      console.log("error", error)
       toast({
         title: "Error",
         description: "Failed to post mood",
@@ -188,6 +184,8 @@ const CameraComponent: React.FC = () => {
     }
   };
 
+  const whiteGrayColor = useColorModeValue('white', 'gray.800')
+
   if (todaysMoodTaken) {
     return (
         <Center py={10}>
@@ -205,7 +203,7 @@ const CameraComponent: React.FC = () => {
           mx="auto"
           p={4}
           borderRadius="lg"
-          bg={useColorModeValue('white', 'gray.800')}
+          bg={whiteGrayColor}
           boxShadow="md"
       >
         <VStack spacing={4}>
@@ -346,31 +344,6 @@ const CameraComponent: React.FC = () => {
                     {confidenceScore}% Confidence
                   </Badge>
                 </HStack>
-
-                {showRewardAnimation && (
-                    <Box position="relative" py={4}>
-                      <Progress
-                          value={100}
-                          size="sm"
-                          colorScheme="yellow"
-                          borderRadius="full"
-                          hasStripe
-                          isAnimated
-                      />
-                      <Text
-                          position="absolute"
-                          top="50%"
-                          left="50%"
-                          transform="translate(-50%, -50%)"
-                          color="yellow.500"
-                          fontWeight="bold"
-                          fontSize="xl"
-                      >
-                        +{rewardAmount.toFixed(1)} $MOOD
-                      </Text>
-                    </Box>
-                )}
-
                 {dailyMood?.mood === detectedMood && (
                     <Badge alignSelf="center" colorScheme="green" fontSize="md" px={4} py={1}>
                       Perfect Match! 🎯 +50 $MOOD Bonus
