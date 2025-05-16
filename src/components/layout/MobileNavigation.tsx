@@ -1,18 +1,7 @@
 import React, {useMemo} from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
-import {
-  Flex,
-  Icon,
-  Box,
-  useColorModeValue,
-} from '@chakra-ui/react';
-import {
-  Home,
-  Compass,
-  Camera,
-  User,
-  MessageSquare, Bell, Coins, Image as ImageIcon
-} from 'lucide-react';
+import {Link as RouterLink, useLocation} from 'react-router-dom';
+import {Box, Flex, Icon, useColorModeValue,} from '@chakra-ui/react';
+import {Camera, Compass, Home, MessageSquare, User} from 'lucide-react';
 import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
 interface NavItemProps {

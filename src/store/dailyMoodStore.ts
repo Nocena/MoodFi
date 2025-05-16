@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { isSameDay } from 'date-fns'
-import {MoodPostType} from "../types";
-import {getAccountPosts, getGlobalPosts} from "../utils/lens.utils.ts";
+import {AccountType, MoodPostType} from "../types";
+import {fetchRecommendedAccounts, getAccountPosts, getGlobalPosts} from "../utils/lens.utils.ts";
 
 interface MoodData {
     moodTime: string
@@ -15,10 +15,15 @@ interface MoodState {
     moodData: MoodData | null
     globalPosts: MoodPostType[]
     userPosts: MoodPostType[]
+    recommendAccounts: AccountType[]
     setMoodData: (data: MoodData) => void
     resetMood: () => void
+    isLoadingGlobalPosts: boolean
+    isLoadingUserPosts: boolean
+    isLoadingRecommendAccounts: boolean
     refreshGlobalPosts: (exceptAccountAddress: string) => Promise<void>
     refreshUserPosts: (accountAddress: string) => Promise<void>
+    refreshRecommendAccounts: (accountAddress: string) => Promise<void>
 
 }
 
@@ -28,6 +33,10 @@ export const useDailyMoodStore = create<MoodState>()(
             moodData: null,
             globalPosts: [],
             userPosts: [],
+            recommendAccounts: [],
+            isLoadingGlobalPosts: false,
+            isLoadingUserPosts: false,
+            isLoadingRecommendAccounts: false,
             setMoodData: (data) => {
                 set({ moodData: data })
             },
@@ -36,14 +45,40 @@ export const useDailyMoodStore = create<MoodState>()(
                 set({ moodData: null })
             },
 
-            refreshGlobalPosts: async (exceptAccountAddress: string) => {
-                const posts = await getGlobalPosts(exceptAccountAddress)
-                set({ globalPosts: posts })
+            refreshGlobalPosts: async (accountAddress: string) => {
+                set({ isLoadingGlobalPosts: true })
+                try {
+                    const posts = await getGlobalPosts(accountAddress)
+                    set({ globalPosts: posts })
+                } catch (e) {
+                    console.error('Failed to fetch global posts', e)
+                } finally {
+                    set({ isLoadingGlobalPosts: false })
+                }
             },
 
             refreshUserPosts: async (accountAddress: string) => {
-                const posts = await getAccountPosts(accountAddress)
-                set({ globalPosts: posts })
+                set({ isLoadingUserPosts: true })
+                try {
+                    const posts = await getAccountPosts(accountAddress)
+                    set({ userPosts: posts })
+                } catch (e) {
+                    console.error('Failed to fetch user posts', e)
+                } finally {
+                    set({ isLoadingUserPosts: false })
+                }
+            },
+
+            refreshRecommendAccounts: async (accountAddress: string) => {
+                set({ isLoadingRecommendAccounts: true })
+                try {
+                    const accounts = await fetchRecommendedAccounts(accountAddress)
+                    set({ recommendAccounts: accounts })
+                } catch (e) {
+                    console.error('Failed to fetch recommended accountss', e)
+                } finally {
+                    set({ isLoadingRecommendAccounts: false })
+                }
             },
         }),
         {

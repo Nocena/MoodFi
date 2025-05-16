@@ -1,7 +1,7 @@
 import {APP_ADDRESS, FEED_ADDRESS, lensPublicClient} from "../constants";
 import {AccountStatusType, AccountType, MOOD_TYPE, MoodPostType} from "../types";
 import {
-    fetchAccount,
+    fetchAccount, fetchAccountRecommendations,
     fetchAccountsAvailable,
     fetchAccountStats,
     fetchFollowers,
@@ -64,6 +64,28 @@ export const fetchAvailableLensAccounts = async (walletAddress: string): Promise
 
     return result.value.items.map((item) => {
         return getAccountDataByRaw(item.account)
+    })
+}
+
+export const fetchRecommendedAccounts = async (accountAddress: string): Promise<AccountType[]> => {
+    if (!accountAddress) {
+        return [];
+    }
+    const result = await fetchAccountRecommendations(lensPublicClient, {
+        account: accountAddress
+    });
+
+    if (result.isErr()) {
+        console.error(result.error)
+        return []
+    }
+
+    const value = result.value
+    if (!value)
+        return []
+
+    return value.items.slice(0, 5).map((item) => {
+        return getAccountDataByRaw(item)
     })
 }
 

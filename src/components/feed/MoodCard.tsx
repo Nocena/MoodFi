@@ -20,6 +20,7 @@ import {
 import {Heart, MessageCircle, Share2} from 'lucide-react';
 import {AccountType, MoodPostType} from '../../types';
 import {useSocialStore} from '../../store/socialStore';
+import {getMoodColor} from "../../utils/common.utils.ts";
 
 interface MoodCardProps {
     user: AccountType;
@@ -65,21 +66,6 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
             hour: '2-digit',
             minute: '2-digit',
         });
-    };
-
-    const getMoodColor = (mood: string) => {
-        switch (mood) {
-            case 'happy':
-                return 'yellow';
-            case 'sad':
-                return 'blue';
-            case 'excited':
-                return 'pink';
-            case 'calm':
-                return 'green';
-            default:
-                return 'gray';
-        }
     };
 
     return (

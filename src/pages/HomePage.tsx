@@ -21,6 +21,7 @@ const HomePage: React.FC = () => {
     } = useDailyMoodStore()
 
     const columnSpan = useBreakpointValue({base: 12, md: 8, lg: 9});
+    const sidebarSpan = useBreakpointValue({ base: 12, md: 4, lg: 3 });
 
     useEffect(() => {
         if (currentAccount) {
@@ -98,13 +99,9 @@ const HomePage: React.FC = () => {
                     </Box>
                 </GridItem>
 
-{/*
                 <GridItem colSpan={sidebarSpan!}>
-                    {todayMoodTaken && suggestedUsers.length > 0 && (
-                        <SuggestedUsers users={suggestedUsers}/>
-                    )}
+                    <SuggestedUsers/>
                 </GridItem>
-*/}
             </Grid>
         </Box>
     )
