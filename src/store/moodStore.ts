@@ -1,15 +1,15 @@
 import {create} from 'zustand';
-import {User, Mood, MoodEntry, DailyMood} from '../types';
+import {DailyMood, MOOD_TYPE, MoodEntry, User} from '../types';
 
 interface MoodState {
     dailyMood: DailyMood | null;
     userMoods: MoodEntry[];
-    todaysMoodTaken: boolean;
+    todayMoodTaken: boolean;
     suggestedUsers: User[];
     isProcessing: boolean;
     error: string | null;
-    detectMood: (photoUrl: string) => Promise<Mood>;
-    submitMood: (mood: Mood, photoUrl: string) => Promise<void>;
+    detectMood: (photoUrl: string) => Promise<MOOD_TYPE>;
+    submitMood: (mood: MOOD_TYPE, photoUrl: string) => Promise<void>;
     getDailyMood: () => Promise<void>;
     getSuggestedUsers: () => Promise<void>;
     resetError: () => void;
@@ -63,114 +63,104 @@ const mockSuggestedUsers: User[] = [
     },
 ];
 
-// Function to determine if user already took today's mood
-const hasTakenTodayMood = (moodHistory: MoodEntry[]): boolean => {
-    if (!moodHistory.length) return false;
+export const useMoodStore = create<MoodState>(
+    (set, get) => ({
+        dailyMood: {
+            date: new Date().toISOString(),
+            mood: 'happy', // Today's selected mood is "happy"
+        },
+        userMoods: [],
+        todayMoodTaken: false,
+        suggestedUsers: [],
+        isProcessing: false,
+        error: null,
 
-    const today = new Date().toISOString().split('T')[0];
-    return moodHistory.some(entry => {
-        const entryDate = new Date(entry.date).toISOString().split('T')[0];
-        return entryDate === today;
-    });
-};
+        detectMood: async (photoUrl: string) => {
+            set({isProcessing: true, error: null});
 
-export const useMoodStore = create<MoodState>((set, get) => ({
-    dailyMood: {
-        date: new Date().toISOString(),
-        mood: 'happy', // Today's selected mood is "happy"
-    },
-    userMoods: [],
-    todaysMoodTaken: false,
-    suggestedUsers: [],
-    isProcessing: false,
-    error: null,
+            try {
+                // Simulate mood detection API call
+                await new Promise(resolve => setTimeout(resolve, 2000));
 
-    detectMood: async (photoUrl: string) => {
-        set({isProcessing: true, error: null});
+                // For demo purposes, we're returning a random mood
+                // In a real app, this would be determined by AI analysis
+                const moods: MOOD_TYPE[] = ['happy', 'sad', 'excited', 'calm', 'neutral'];
+                const detectedMood = moods[Math.floor(Math.random() * moods.length)];
 
-        try {
-            // Simulate mood detection API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+                set({isProcessing: false});
+                return detectedMood;
+            } catch (error) {
+                set({error: 'Failed to detect mood', isProcessing: false});
+                throw new Error('Mood detection failed');
+            }
+        },
 
-            // For demo purposes, we're returning a random mood
-            // In a real app, this would be determined by AI analysis
-            const moods: Mood[] = ['happy', 'sad', 'excited', 'calm', 'neutral'];
-            const detectedMood = moods[Math.floor(Math.random() * moods.length)];
+        submitMood: async (mood: MOOD_TYPE, photoUrl: string) => {
+            set({isProcessing: true, error: null});
 
-            set({isProcessing: false});
-            return detectedMood;
-        } catch (error) {
-            set({error: 'Failed to detect mood', isProcessing: false});
-            throw new Error('Mood detection failed');
-        }
-    },
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
-    submitMood: async (mood: Mood, photoUrl: string) => {
-        set({isProcessing: true, error: null});
+                const dailyMood = get().dailyMood;
+                const isReward = dailyMood?.mood === mood;
 
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const dailyMood = get().dailyMood;
-            const isReward = dailyMood?.mood === mood;
-
-            const newMoodEntry: MoodEntry = {
-                date: new Date().toISOString(),
-                mood,
-                photo: photoUrl,
-                reward: isReward,
-                comments: [],
-                likes: [],
-            };
-
-            set(state => ({
-                userMoods: [newMoodEntry, ...state.userMoods],
-                todaysMoodTaken: true,
-                isProcessing: false
-            }));
-
-            // After submitting mood, get suggested users
-            get().getSuggestedUsers();
-        } catch (error) {
-            set({error: 'Failed to submit mood', isProcessing: false});
-        }
-    },
-
-    getDailyMood: async () => {
-        set({isProcessing: true, error: null});
-
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // For demo purposes, we're using a fixed mood
-            // In a real app, this would be determined by the server
-            set({
-                dailyMood: {
+                const newMoodEntry: MoodEntry = {
                     date: new Date().toISOString(),
-                    mood: 'happy',
-                },
-                isProcessing: false
-            });
-        } catch (error) {
-            set({error: 'Failed to get daily mood', isProcessing: false});
-        }
-    },
+                    mood,
+                    photo: photoUrl,
+                    reward: isReward,
+                    comments: [],
+                    likes: [],
+                };
 
-    getSuggestedUsers: async () => {
-        set({isProcessing: true, error: null});
+                set(state => ({
+                    userMoods: [newMoodEntry, ...state.userMoods],
+                    todayMoodTaken: true,
+                    isProcessing: false
+                }));
 
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 800));
+                // After submitting mood, get suggested users
+                get().getSuggestedUsers();
+            } catch (error) {
+                set({error: 'Failed to submit mood', isProcessing: false});
+            }
+        },
 
-            // In a real app, we would filter users based on today's mood
-            set({suggestedUsers: mockSuggestedUsers, isProcessing: false});
-        } catch (error) {
-            set({error: 'Failed to get suggested users', isProcessing: false});
-        }
-    },
+        getDailyMood: async () => {
+            set({isProcessing: true, error: null});
 
-    resetError: () => set({error: null}),
-}));
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // For demo purposes, we're using a fixed mood
+                // In a real app, this would be determined by the server
+                set({
+                    dailyMood: {
+                        date: new Date().toISOString(),
+                        mood: 'happy',
+                    },
+                    isProcessing: false
+                });
+            } catch (error) {
+                set({error: 'Failed to get daily mood', isProcessing: false});
+            }
+        },
+
+        getSuggestedUsers: async () => {
+            set({isProcessing: true, error: null});
+
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // In a real app, we would filter users based on today's mood
+                set({suggestedUsers: mockSuggestedUsers, isProcessing: false});
+            } catch (error) {
+                set({error: 'Failed to get suggested users', isProcessing: false});
+            }
+        },
+
+        resetError: () => set({error: null}),
+    }));

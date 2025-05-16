@@ -1,18 +1,52 @@
 import {APP_ADDRESS, FEED_ADDRESS, lensPublicClient} from "../constants";
-import {AccountStatusType, AccountType, MOOD_TYPE} from "../types";
+import {AccountStatusType, AccountType, MOOD_TYPE, MoodPostType} from "../types";
 import {
-    fetchAccount,
+    fetchAccount, fetchAccountRecommendations,
     fetchAccountsAvailable,
     fetchAccountStats,
     fetchFollowers,
     fetchFollowing,
+    fetchPosts,
     lastLoggedInAccount,
     post,
 } from "@lens-protocol/client/actions";
-
+import {type EvmAddress} from '@lens-protocol/types'
 import {image, MediaImageMimeType, MetadataAttributeType,} from "@lens-protocol/metadata"
 import {uploadMediaToGrove, uploadMetadataToGrove} from "./grove.utils.ts";
 import {SessionClient, uri} from "@lens-protocol/client";
+
+const getAccountDataByRaw = (rawData: any): AccountType => {
+    return {
+        accountAddress: rawData.address,
+        createdAt: rawData.createdAt,
+        avatar: rawData.metadata?.picture ?? '',
+        displayName: rawData.metadata?.name ?? '',
+        localName: rawData.username?.localName ?? '',
+        bio: rawData.metadata?.bio ?? '',
+        isFollowedByMe: rawData.operations?.isFollowedByMe ?? false,
+    }
+
+}
+
+const getMoodPostDataByRaw = (item: any): MoodPostType => {
+    const attributes = item.metadata.attributes
+    const moodType = attributes.filter((attribute: any) => attribute.key === 'moodType')[0]?.value ?? 'neutral'
+    const confidence = Number(attributes.filter((attribute: any) => attribute.key === 'confidence')[0]?.value ?? 0)
+    const rewardTokenAmount = Number(attributes.filter((attribute: any) => attribute.key === 'rewardTokenAmount')[0]?.value ?? 0)
+
+    return {
+        id: item.id,
+        author: getAccountDataByRaw(item.author),
+        content: item?.metadata?.content ?? '',
+        imageUrl: item?.metadata?.image.item ?? '',
+        moodType,
+        confidence,
+        rewardTokenAmount,
+        commentsCount: item.stats?.comments ?? 0,
+        likesCount: item.stats?.upvotes ?? 0,
+        timestamp: item.timestamp ?? (new Date()).toString(),
+    }
+}
 
 export const fetchAvailableLensAccounts = async (walletAddress: string): Promise<AccountType[]> => {
     if (!walletAddress) {
@@ -29,14 +63,29 @@ export const fetchAvailableLensAccounts = async (walletAddress: string): Promise
     }
 
     return result.value.items.map((item) => {
-        return {
-            accountAddress: item.account.address,
-            createdAt: item.account.createdAt,
-            avatar: item.account.metadata?.picture ?? '',
-            displayName: item.account.metadata?.name ?? '',
-            localName: item!.account.username?.localName ?? '',
-            bio: item.account.metadata?.bio ?? '',
-        }
+        return getAccountDataByRaw(item.account)
+    })
+}
+
+export const fetchRecommendedAccounts = async (accountAddress: string): Promise<AccountType[]> => {
+    if (!accountAddress) {
+        return [];
+    }
+    const result = await fetchAccountRecommendations(lensPublicClient, {
+        account: accountAddress
+    });
+
+    if (result.isErr()) {
+        console.error(result.error)
+        return []
+    }
+
+    const value = result.value
+    if (!value)
+        return []
+
+    return value.items.slice(0, 5).map((item) => {
+        return getAccountDataByRaw(item)
     })
 }
 
@@ -59,15 +108,7 @@ export const fetchAccountByUserName = async (userName: string): Promise<AccountT
     if (!item)
         return null
 
-    return {
-        accountAddress: item!.address,
-        createdAt: item!.createdAt,
-        avatar: item!.metadata?.picture ?? '',
-        displayName: item!.metadata?.name ?? '',
-        localName: item!.username?.localName ?? '',
-        bio: item!.metadata?.bio ?? '',
-        isFollowedByMe: item!.operations?.isFollowedByMe ?? false,
-    }
+    return getAccountDataByRaw(item)
 }
 
 export const getLastLoggedInAccount = async (walletAddress: string): Promise<AccountType | null> => {
@@ -90,14 +131,7 @@ export const getLastLoggedInAccount = async (walletAddress: string): Promise<Acc
         if (!item)
             return null
 
-        return {
-            accountAddress: item!.address,
-            createdAt: item!.createdAt,
-            avatar: item!.metadata?.picture ?? '',
-            displayName: item!.metadata?.name ?? '',
-            localName: item!.username?.localName ?? '',
-            bio: item!.metadata?.bio ?? '',
-        }
+        return getAccountDataByRaw(item)
     } catch (e) {
         console.log("error getLastLoggedInAccount", e)
         return null;
@@ -160,15 +194,7 @@ export const getAccountFollowers = async (accountAddress: string): Promise<Accou
             return []
 
         return items.map((item) => {
-            return {
-                accountAddress: item.follower.address,
-                createdAt: item.follower.createdAt,
-                avatar: item.follower.metadata?.picture ?? '',
-                displayName: item.follower.metadata?.name ?? '',
-                bio: item.follower.metadata?.bio ?? '',
-                localName: item.follower.username?.localName ?? '',
-                isFollowedByMe: item.follower.operations?.isFollowedByMe ?? false,
-            }
+            return getAccountDataByRaw(item.follower)
         })
     } catch (e) {
         console.log("error getAccountFollowers", e)
@@ -196,15 +222,7 @@ export const getAccountFollowings = async (accountAddress: string): Promise<Acco
             return []
 
         return items.map((item) => {
-            return {
-                accountAddress: item.following.address,
-                createdAt: item.following.createdAt,
-                avatar: item.following.metadata?.picture ?? '',
-                displayName: item.following.metadata?.name ?? '',
-                bio: item.following.metadata?.bio ?? '',
-                localName: item.following.username?.localName ?? '',
-                isFollowedByMe: item.following.operations?.isFollowedByMe ?? false,
-            }
+            return getAccountDataByRaw(item.following)
         })
     } catch (e) {
         console.log("error getAccountFollowers", e)
@@ -257,4 +275,59 @@ export const postDailyMood = async (
     }
 
     return false
+}
+
+export const getGlobalPosts = async (exceptAccountAddress: string): Promise<MoodPostType[]> => {
+    try {
+        const result = await fetchPosts(lensPublicClient, {
+            pageSize: "TEN",
+            filter: {
+                feeds: [{
+                    feed: FEED_ADDRESS as EvmAddress,
+                }],
+            },
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        const items = result.value.items
+        if (!items)
+            return []
+
+        return items.map((item) => getMoodPostDataByRaw(item)).filter(item => item.author.accountAddress !== exceptAccountAddress)
+    } catch (e) {
+        console.log("error getGlobalPosts", e)
+        return [];
+    }
+}
+
+export const getAccountPosts = async (accountAddress: string): Promise<MoodPostType[]> => {
+    try {
+        const result = await fetchPosts(lensPublicClient, {
+            pageSize: "TEN",
+            filter: {
+                authors: [accountAddress],
+                feeds: [{
+                    feed: FEED_ADDRESS as EvmAddress,
+                }],
+            },
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        const items = result.value.items
+        if (!items)
+            return []
+
+        return items.map((item) => getMoodPostDataByRaw(item))
+    } catch (e) {
+        console.log("error getAccountPosts", e)
+        return [];
+    }
 }

@@ -25,7 +25,7 @@ import {
 import {Camera, RefreshCw, Upload} from 'lucide-react';
 import {MOOD_TYPE} from '../../types';
 import {useMoodStore} from '../../store/moodStore';
-import {dataURLtoFile} from "../../utils/common.utils.ts";
+import {dataURLtoFile, getMoodColor, getMoodEmoji} from "../../utils/common.utils.ts";
 import {postDailyMood} from "../../utils/lens.utils.ts";
 import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
@@ -47,7 +47,7 @@ const CameraComponent: React.FC = () => {
     const {
         detectMood,
         dailyMood,
-        todaysMoodTaken,
+        todayMoodTaken,
         isProcessing,
     } = useMoodStore();
 
@@ -187,39 +187,10 @@ const CameraComponent: React.FC = () => {
         setIsModalOpen(false);
     };
 
-    const getMoodColor = (mood: MOOD_TYPE) => {
-        switch (mood) {
-            case 'happy':
-                return 'yellow';
-            case 'sad':
-                return 'blue';
-            case 'excited':
-                return 'pink';
-            case 'calm':
-                return 'green';
-            case 'neutral':
-                return 'gray';
-        }
-    };
-
-    const getMoodEmoji = (mood: MOOD_TYPE) => {
-        switch (mood) {
-            case 'happy':
-                return '😊';
-            case 'sad':
-                return '😢';
-            case 'excited':
-                return '😃';
-            case 'calm':
-                return '😌';
-            case 'neutral':
-                return '😐';
-        }
-    };
 
     const whiteGrayColor = useColorModeValue('white', 'gray.800')
 
-    if (todaysMoodTaken) {
+    if (todayMoodTaken) {
         return (
             <Center py={10}>
                 <VStack spacing={4}>

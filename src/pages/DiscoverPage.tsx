@@ -4,6 +4,7 @@ import {Avatar, Badge, Box, Button, Flex, Heading, SimpleGrid, Text, useColorMod
 import {useMoodStore} from '../store/moodStore';
 import {useSocialStore} from '../store/socialStore';
 import {useLensAuth} from "../providers/LensAuthProvider.tsx";
+import {getMoodColor} from "../utils/common.utils.ts";
 
 const DiscoverPage: React.FC = () => {
   const { isAuthenticated } = useLensAuth();
@@ -26,17 +27,6 @@ const DiscoverPage: React.FC = () => {
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-  
-  // Helper function to get mood color
-  const getMoodColor = (mood: string) => {
-    switch (mood) {
-      case 'happy': return 'yellow';
-      case 'sad': return 'blue';
-      case 'excited': return 'pink';
-      case 'calm': return 'green';
-      default: return 'gray';
-    }
-  };
   
   const handleFollow = async (userId: string) => {
     try {

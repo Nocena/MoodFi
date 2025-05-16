@@ -27,7 +27,7 @@ import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 
 const Header: React.FC = () => {
   const { colorMode, toggleColorMode } = useColorMode();
-  const {disconnect, isAuthenticated} = useLensAuth()
+  const {disconnect, isAuthenticated, currentAccount} = useLensAuth()
   const { user} = useAuthStore();
   const { unreadNotifications } = useSocialStore();
   const navigate = useNavigate();
@@ -134,7 +134,7 @@ const Header: React.FC = () => {
                   <MenuList>
                     <MenuItem
                         as={RouterLink}
-                        to="/profile"
+                        to={`/profile/${currentAccount?.localName}`}
                         icon={<User size={16} />}
                     >
                       Profile

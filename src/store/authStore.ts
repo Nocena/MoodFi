@@ -23,23 +23,7 @@ const mockUser: User = {
   location: 'San Francisco, CA',
   followers: ['user-2', 'user-3'],
   following: ['user-2'],
-  moodHistory: [
-    {
-      date: new Date(Date.now() - 86400000).toISOString(),
-      mood: 'happy',
-      photo: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600',
-      reward: true,
-      comments: [
-        {
-          id: 'comment-1',
-          userId: 'user-2',
-          text: 'Looking good today!',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-        },
-      ],
-      likes: ['user-2', 'user-3'],
-    },
-  ],
+  moodHistory: [],
   isOnline: true,
   lastActive: new Date().toISOString(),
   joinedDate: new Date(Date.now() - 30 * 86400000).toISOString(),
