@@ -15,7 +15,7 @@ import {type EvmAddress} from '@lens-protocol/types'
 import {image, MediaImageMimeType, MetadataAttributeType, textOnly,} from "@lens-protocol/metadata"
 import {uploadMediaToGrove, uploadMetadataToGrove} from "./grove.utils";
 import {SessionClient, uri, postId} from "@lens-protocol/client";
-import {PostReactionType, PostReferenceType} from "@lens-protocol/graphql";
+import {PostReactionType, PostReferenceType} from "@lens-protocol/client";
 
 const getAccountDataByRaw = (rawData: any): AccountType => {
     return {
