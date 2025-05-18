@@ -5,8 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:https": "node server.mjs",
-    "setup:https": "bash setup-https.sh",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -20,7 +18,6 @@
     "@lens-protocol/client": "^0.0.0-canary-20250430134539",
     "@lens-protocol/metadata": "^2.0.0",
     "@tanstack/react-query": "^5.76.0",
-    "@wagmi/core": "^2.17.2",
     "connectkit": "^1.8.2",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
