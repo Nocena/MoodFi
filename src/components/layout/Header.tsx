@@ -20,7 +20,6 @@ import {
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
-import {useAuthStore} from '../../store/authStore';
 import {useSocialStore} from '../../store/socialStore';
 import {Bell, Camera, LogOut, Moon, Settings, Sun, User,} from 'lucide-react';
 import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
@@ -28,7 +27,6 @@ import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
 const Header: React.FC = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const {disconnect, isAuthenticated, currentAccount} = useLensAuth()
-  const { user} = useAuthStore();
   const { unreadNotifications } = useSocialStore();
   const navigate = useNavigate();
 
@@ -127,8 +125,8 @@ const Header: React.FC = () => {
                   >
                     <Avatar
                         size="sm"
-                        src={user?.avatar}
-                        name={user?.name}
+                        src={currentAccount?.avatar}
+                        name={currentAccount?.displayName}
                     />
                   </MenuButton>
                   <MenuList>

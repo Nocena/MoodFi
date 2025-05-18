@@ -82,7 +82,7 @@ const AccountSelectionModal = ({
     const {
         address: walletAddress,
     } = useAccount()
-    const {authenticate, isAuthenticating} = useLensAuth()
+    const {authenticate, isAuthenticating, client} = useLensAuth()
     const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
     const [availableAccounts, setAvailableAccounts] = useState<AccountType[]>([]);
     const [selectedAccount, setSelectedAccount] = useState<AccountType | null>(null);
@@ -94,7 +94,7 @@ const AccountSelectionModal = ({
     useEffect(() => {
         if (walletAddress) {
             setIsLoadingAccounts(true)
-            fetchAvailableLensAccounts(walletAddress).then(accounts => {
+            fetchAvailableLensAccounts(client, walletAddress).then(accounts => {
                 setAvailableAccounts(accounts)
                 setIsLoadingAccounts(false)
             }).catch(err => {

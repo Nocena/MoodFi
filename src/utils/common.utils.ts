@@ -22,15 +22,19 @@ export const dataURLtoFile = async (dataUrl: string, fileName = 'mood.png'): Pro
 export const getMoodColor = (mood: MOOD_TYPE) => {
     switch (mood) {
         case 'happy':
-            return 'yellow';
+            return 'green';
         case 'sad':
             return 'blue';
-        case 'excited':
-            return 'pink';
-        case 'calm':
-            return 'green';
+        case 'fearful':
+            return 'yellow';
         case 'neutral':
             return 'gray';
+        case 'angry':
+            return 'red';
+        case 'disgusted':
+            return 'yellow';
+        case 'surprised':
+            return 'pink';
     }
 };
 
@@ -40,11 +44,15 @@ export const getMoodEmoji = (mood: MOOD_TYPE) => {
             return '😊';
         case 'sad':
             return '😢';
-        case 'excited':
-            return '😃';
-        case 'calm':
-            return '😌';
+        case 'fearful':
+            return '😨';
         case 'neutral':
             return '😐';
+        case 'angry':
+            return '😡';
+        case 'disgusted':
+            return '🤢';
+        case 'surprised':
+            return '😲';
     }
 };

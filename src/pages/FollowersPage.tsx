@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Link as RouterLink, Navigate, useLocation, useParams} from 'react-router-dom';
 import {
     Avatar,
@@ -22,17 +22,19 @@ import {UserPlus, Users} from 'lucide-react';
 import {useLensAuth} from "../providers/LensAuthProvider.tsx";
 import {fetchAccountByUserName, getAccountFollowers, getAccountFollowings} from "../utils/lens.utils.ts";
 import {AccountType} from "../types";
+import {follow, unfollow} from "@lens-protocol/client/actions";
 
 const FollowersPage: React.FC = () => {
     const {name} = useParams();
     const userName = name as string
-
     const location = useLocation();
-    const {isAuthenticated, currentAccount} = useLensAuth();
+    const {isAuthenticated, client} = useLensAuth();
     const [activeTab, setActiveTab] = useState(location.hash === '#following' ? 1 : 0);
     const [isLoading, setIsLoading] = useState(true);
     const [followers, setFollowers] = useState<AccountType[]>([]);
     const [followings, setFollowings] = useState<AccountType[]>([]);
+    const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [statusMap, setStatusMap] = useState<Record<string, boolean>>({}); // id -> true = 'followed' | 'unfollowed' | 'error'
 
     const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -42,12 +44,20 @@ const FollowersPage: React.FC = () => {
     useEffect(() => {
         (async () => {
             try {
-                const selectedAccount = await fetchAccountByUserName(userName)
+                const selectedAccount = await fetchAccountByUserName(client, userName)
                 if (!selectedAccount)
                     throw new Error('empty profile')
 
-                setFollowers(await getAccountFollowers(selectedAccount.accountAddress))
-                setFollowings(await getAccountFollowings(selectedAccount.accountAddress))
+                const followerAccounts = await getAccountFollowers(client, selectedAccount.accountAddress)
+                const followingAccounts = await getAccountFollowings(client, selectedAccount.accountAddress)
+                setFollowers(followerAccounts)
+                setFollowings(followingAccounts)
+
+                const newStatusMap:Record<string, boolean> = {}
+                followerAccounts.map(account => newStatusMap[account.accountAddress] = account.isFollowedByMe ?? false)
+                followingAccounts.map(account => newStatusMap[account.accountAddress] = account.isFollowedByMe ?? false)
+                setStatusMap(newStatusMap)
+
             } catch (e) {
                 console.log("error", e)
             } finally {
@@ -60,11 +70,28 @@ const FollowersPage: React.FC = () => {
         return <Navigate to="/login"/>;
     }
 
-    const handleFollow = async (userId: string) => {
+    const handleFollowToggle = async (accountAddress: string) => {
+        setLoadingId(accountAddress);
+
         try {
-            // await followUser(userId);
-        } catch (error) {
-            console.error('Failed to follow user:', error);
+            const isFollowing = statusMap[accountAddress];
+
+            // Do your async action (API call etc.)
+            if (isFollowing) {
+                await unfollow(client!, {
+                    account: accountAddress,
+                })
+                setStatusMap((prev) => ({ ...prev, [accountAddress]: false }));
+            } else {
+                await follow(client!, {
+                    account: accountAddress,
+                })
+                setStatusMap((prev) => ({ ...prev, [accountAddress]: true }));
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoadingId(null);
         }
     };
 
@@ -197,10 +224,11 @@ const FollowersPage: React.FC = () => {
                                                 <Button
                                                     size="sm"
                                                     colorScheme="brand"
-                                                    variant={follower.isFollowedByMe ? "outline" : "solid"}
-                                                    onClick={() => handleFollow(follower.accountAddress)}
+                                                    variant={statusMap[follower.accountAddress] ? "solid" : "outline"}
+                                                    isLoading={loadingId === follower.accountAddress}
+                                                    onClick={() => handleFollowToggle(follower.accountAddress)}
                                                 >
-                                                    {follower.isFollowedByMe ? "Following" : "Follow"}
+                                                    {statusMap[follower.accountAddress] ? 'Following' : 'Follow'}
                                                 </Button>
                                             </HStack>
                                         </Box>
@@ -250,8 +278,7 @@ const FollowersPage: React.FC = () => {
                                                 <Button
                                                     size="sm"
                                                     colorScheme="brand"
-                                                    variant="outline"
-                                                    onClick={() => handleFollow(followed.accountAddress)}
+                                                    variant={"outline"}
                                                 >
                                                     Following
                                                 </Button>

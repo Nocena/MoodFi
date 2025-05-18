@@ -1,28 +1,30 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
-    Box,
-    Flex,
-    Text,
     Avatar,
+    Badge,
+    Box,
     Button,
+    Divider,
+    Flex,
+    HStack,
+    Skeleton,
+    Text,
     useColorModeValue,
     VStack,
-    HStack,
-    Badge,
-    Divider, Skeleton,
 } from '@chakra-ui/react';
-import {useSocialStore} from '../../store/socialStore';
 import {getMoodColor} from "../../utils/common.utils.ts";
 import {useDailyMoodStore} from "../../store/dailyMoodStore.ts";
 import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
+import {follow, unfollow} from "@lens-protocol/client/actions";
 
 const SuggestedUsers: React.FC = () => {
-    const {currentAccount} = useLensAuth();
-    const {followUser} = useSocialStore()
+    const {currentAccount, client} = useLensAuth();
     const navigate = useNavigate()
     const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.700');
+    const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [statusMap, setStatusMap] = useState<Record<string, boolean>>({}); // id -> true = 'followed' | 'unfollowed' | 'error'
 
     const {
         isLoadingRecommendAccounts,
@@ -35,17 +37,42 @@ const SuggestedUsers: React.FC = () => {
 
     useEffect(() => {
         if (currentAccount) {
-            refreshRecommendAccounts(currentAccount.accountAddress)
-            refreshSimilarAccounts(currentAccount.accountAddress, null)
+            setStatusMap({})
+            refreshRecommendAccounts(client, currentAccount.accountAddress)
+            refreshSimilarAccounts(client, currentAccount.accountAddress, null)
         }
-    }, [currentAccount, refreshRecommendAccounts, refreshSimilarAccounts])
+    }, [client, currentAccount, refreshRecommendAccounts, refreshSimilarAccounts])
 
 
-    const handleFollow = async (userId: string) => {
+    useEffect(() => {
+        const newStatusMap:Record<string, boolean> = {}
+        recommendAccounts.map(account => newStatusMap[account.accountAddress] = account.isFollowedByMe ?? false)
+        similarMoodAccounts.map(account => newStatusMap[account.accountAddress] = account.isFollowedByMe ?? false)
+        setStatusMap(newStatusMap)
+    }, [recommendAccounts, similarMoodAccounts])
+
+    const handleFollowToggle = async (accountAddress: string) => {
+        setLoadingId(accountAddress);
+
         try {
-            await followUser(userId);
-        } catch (error) {
-            console.error('Failed to follow user:', error);
+            const isFollowing = statusMap[accountAddress];
+
+            // Do your async action (API call etc.)
+            if (isFollowing) {
+                await unfollow(client!, {
+                    account: accountAddress,
+                })
+                setStatusMap((prev) => ({ ...prev, [accountAddress]: false }));
+            } else {
+                await follow(client!, {
+                    account: accountAddress,
+                })
+                setStatusMap((prev) => ({ ...prev, [accountAddress]: true }));
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoadingId(null);
         }
     };
 
@@ -109,10 +136,11 @@ const SuggestedUsers: React.FC = () => {
                                     <Button
                                         size="sm"
                                         colorScheme="brand"
-                                        variant="outline"
-                                        onClick={() => handleFollow(user.accountAddress)}
+                                        variant={statusMap[user.accountAddress] ? "solid" : "outline"}
+                                        isLoading={loadingId === user.accountAddress}
+                                        onClick={() => handleFollowToggle(user.accountAddress)}
                                     >
-                                        Follow
+                                        {statusMap[user.accountAddress] ? 'Following' : 'Follow'}
                                     </Button>
                                 </Flex>
                             ))}
@@ -176,10 +204,11 @@ const SuggestedUsers: React.FC = () => {
                                     <Button
                                         size="sm"
                                         colorScheme="brand"
-                                        variant="outline"
-                                        onClick={() => handleFollow(user.accountAddress)}
+                                        variant={statusMap[user.accountAddress] ? "solid" : "outline"}
+                                        isLoading={loadingId === user.accountAddress}
+                                        onClick={() => handleFollowToggle(user.accountAddress)}
                                     >
-                                        Follow
+                                        {statusMap[user.accountAddress] ? 'Following' : 'Follow'}
                                     </Button>
                                 </Flex>
                             ))}

@@ -48,11 +48,11 @@ const getMoodPostDataByRaw = (item: any): MoodPostType => {
     }
 }
 
-export const fetchAvailableLensAccounts = async (walletAddress: string): Promise<AccountType[]> => {
+export const fetchAvailableLensAccounts = async (sessionClient: SessionClient | null, walletAddress: string): Promise<AccountType[]> => {
     if (!walletAddress) {
         return [];
     }
-    const result = await fetchAccountsAvailable(lensPublicClient, {
+    const result = await fetchAccountsAvailable(sessionClient ?? sessionClient ?? lensPublicClient, {
         managedBy: walletAddress,
         includeOwned: true,
     });
@@ -67,12 +67,13 @@ export const fetchAvailableLensAccounts = async (walletAddress: string): Promise
     })
 }
 
-export const fetchRecommendedAccounts = async (accountAddress: string): Promise<AccountType[]> => {
+export const fetchRecommendedAccounts = async (sessionClient: SessionClient | null, accountAddress: string): Promise<AccountType[]> => {
     if (!accountAddress) {
         return [];
     }
-    const result = await fetchAccountRecommendations(lensPublicClient, {
-        account: accountAddress
+    const result = await fetchAccountRecommendations(sessionClient ?? lensPublicClient, {
+        account: accountAddress,
+        shuffle: true,
     });
 
     if (result.isErr()) {
@@ -89,11 +90,11 @@ export const fetchRecommendedAccounts = async (accountAddress: string): Promise<
     })
 }
 
-export const fetchAccountByUserName = async (userName: string): Promise<AccountType | null> => {
+export const fetchAccountByUserName = async (sessionClient: SessionClient | null, userName: string): Promise<AccountType | null> => {
     if (!userName) {
         return null;
     }
-    const result = await fetchAccount(lensPublicClient, {
+    const result = await fetchAccount(sessionClient ?? lensPublicClient, {
         username: {
             localName: userName,
         },
@@ -111,13 +112,13 @@ export const fetchAccountByUserName = async (userName: string): Promise<AccountT
     return getAccountDataByRaw(item)
 }
 
-export const getLastLoggedInAccount = async (walletAddress: string): Promise<AccountType | null> => {
+export const getLastLoggedInAccount = async (sessionClient: SessionClient | null, walletAddress: string): Promise<AccountType | null> => {
     if (!walletAddress) {
         return null;
     }
 
     try {
-        const result = await lastLoggedInAccount(lensPublicClient, {
+        const result = await lastLoggedInAccount(sessionClient ?? lensPublicClient, {
             app: APP_ADDRESS,
             address: walletAddress,
         });
@@ -138,13 +139,13 @@ export const getLastLoggedInAccount = async (walletAddress: string): Promise<Acc
     }
 }
 
-export const getAccountStats = async (accountAddress: string): Promise<AccountStatusType | null> => {
+export const getAccountStats = async (sessionClient: SessionClient | null, accountAddress: string): Promise<AccountStatusType | null> => {
     if (!accountAddress) {
         return null;
     }
 
     try {
-        const result = await fetchAccountStats(lensPublicClient, {
+        const result = await fetchAccountStats(sessionClient ?? lensPublicClient, {
             account: accountAddress,
         });
 
@@ -174,13 +175,13 @@ export const getAccountStats = async (accountAddress: string): Promise<AccountSt
     }
 }
 
-export const getAccountFollowers = async (accountAddress: string): Promise<AccountType[]> => {
+export const getAccountFollowers = async (sessionClient: SessionClient | null, accountAddress: string): Promise<AccountType[]> => {
     if (!accountAddress) {
         return [];
     }
 
     try {
-        const result = await fetchFollowers(lensPublicClient, {
+        const result = await fetchFollowers(sessionClient ?? lensPublicClient, {
             account: accountAddress,
         });
 
@@ -202,13 +203,13 @@ export const getAccountFollowers = async (accountAddress: string): Promise<Accou
     }
 }
 
-export const getAccountFollowings = async (accountAddress: string): Promise<AccountType[]> => {
+export const getAccountFollowings = async (sessionClient: SessionClient | null, accountAddress: string): Promise<AccountType[]> => {
     if (!accountAddress) {
         return [];
     }
 
     try {
-        const result = await fetchFollowing(lensPublicClient, {
+        const result = await fetchFollowing(sessionClient ?? lensPublicClient, {
             account: accountAddress,
         });
 
@@ -277,9 +278,9 @@ export const postDailyMood = async (
     return false
 }
 
-export const getGlobalPosts = async (exceptAccountAddress: string): Promise<MoodPostType[]> => {
+export const getGlobalPosts = async (sessionClient: SessionClient | null, exceptAccountAddress: string): Promise<MoodPostType[]> => {
     try {
-        const result = await fetchPosts(lensPublicClient, {
+        const result = await fetchPosts(sessionClient ?? lensPublicClient, {
             pageSize: "TEN",
             filter: {
                 feeds: [{
@@ -304,9 +305,9 @@ export const getGlobalPosts = async (exceptAccountAddress: string): Promise<Mood
     }
 }
 
-export const getAccountPosts = async (accountAddress: string): Promise<MoodPostType[]> => {
+export const getAccountPosts = async (sessionClient: SessionClient | null, accountAddress: string): Promise<MoodPostType[]> => {
     try {
-        const result = await fetchPosts(lensPublicClient, {
+        const result = await fetchPosts(sessionClient ?? lensPublicClient, {
             pageSize: "TEN",
             filter: {
                 authors: [accountAddress],
@@ -332,9 +333,9 @@ export const getAccountPosts = async (accountAddress: string): Promise<MoodPostT
     }
 }
 
-export const getSimilarMoodAccounts = async (exceptAccountAddress: string, givenMoodType: MOOD_TYPE | null): Promise<AuthorWithMood[]> => {
+export const getSimilarMoodAccounts = async (sessionClient: SessionClient | null, exceptAccountAddress: string, givenMoodType: MOOD_TYPE | null): Promise<AuthorWithMood[]> => {
     try {
-        const result = await fetchPosts(lensPublicClient, {
+        const result = await fetchPosts(sessionClient ?? lensPublicClient, {
             pageSize: "FIFTY",
             filter: {
                 feeds: [{

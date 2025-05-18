@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Link as RouterLink, Navigate, useNavigate, useParams} from 'react-router-dom';
+import {Link as RouterLink, useParams} from 'react-router-dom';
 import {
     Avatar,
     Box,
-    Button, Center,
+    Button,
+    Center,
     Flex,
     Heading,
     HStack,
@@ -12,27 +13,33 @@ import {
     Skeleton,
     SkeletonCircle,
     SkeletonText,
+    Tab,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
     Text,
     useColorModeValue,
     VStack,
 } from '@chakra-ui/react';
-import {Calendar, Edit, MapPin, Users, UserX} from 'lucide-react';
+import {Calendar, Edit, Users, UserX} from 'lucide-react';
 import MoodCard from '../components/feed/MoodCard';
 import EditProfileModal from '../components/profile/EditProfileModal';
 import {useLensAuth} from "../providers/LensAuthProvider.tsx";
-import {fetchAccountByUserName, getAccountStats} from "../utils/lens.utils.ts";
-import {ProfileDataType} from "../types";
+import {fetchAccountByUserName, getAccountPosts, getAccountStats} from "../utils/lens.utils.ts";
+import {MoodPostType, ProfileDataType} from "../types";
 import {formatDate} from "../utils/common.utils.ts";
 import {follow, unfollow} from "@lens-protocol/client/actions";
-import {GRAPH_ADDRESS} from "../constants";
 
 const ProfilePage: React.FC = () => {
     const {client, currentAccount} = useLensAuth();
     const {name} = useParams();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
     const [isFollowLoading, setIsFollowLoading] = useState(false);
     const [isError, setIsError] = useState(false);
+    const [accountPosts, setAccountPosts] = useState<MoodPostType[]>([])
     const [profileData, setProfileData] = useState<ProfileDataType>({
         followers: 0,
         following: 0,
@@ -51,11 +58,11 @@ const ProfilePage: React.FC = () => {
 
         (async () => {
             try {
-                const selectedAccount = await fetchAccountByUserName(userName)
+                const selectedAccount = await fetchAccountByUserName(client, userName)
                 if (!selectedAccount)
                     throw new Error('empty profile')
 
-                const accountStats = await getAccountStats(selectedAccount.accountAddress)
+                const accountStats = await getAccountStats(client, selectedAccount.accountAddress)
                 if (!accountStats)
                     throw new Error('empty profile')
 
@@ -72,14 +79,18 @@ const ProfilePage: React.FC = () => {
                     isMe: currentAccount?.accountAddress === selectedAccount.accountAddress,
                     isFollowedByMe: selectedAccount?.isFollowedByMe ?? false,
                 })
+
+
+                const posts = await getAccountPosts(client, selectedAccount.accountAddress)
+                setAccountPosts(posts)
+                setIsHistoryLoading(false)
             } catch (e) {
                 console.log("error", e)
                 setIsError(true)
+                setIsHistoryLoading(false)
             }
         })()
-
-
-    }, [currentAccount, userName]);
+    }, [client, currentAccount, userName]);
 
     const bgGray50 = useColorModeValue('gray.50', 'gray.700')
     const bgWhiteGray = useColorModeValue('white', 'gray.800')
@@ -250,51 +261,133 @@ const ProfilePage: React.FC = () => {
             </Box>
 
             {/* Mood History */}
-            <Box>
-                {/*
-                <Heading size="md" mb={4}>
-                    Your Mood History
-                </Heading>
+            <Box
+                bg={bgWhiteGray}
+                borderRadius="lg"
+                overflow="hidden"
+                boxShadow="md"
+            >
+                <Tabs isFitted variant="enclosed">
+                    <TabList>
+                        <Tab>Mood History</Tab>
+                        <Tab>NFT Collection</Tab>
+                    </TabList>
 
-                <SimpleGrid columns={{base: 1, md: 2}} spacing={6}>
-                    {isLoading ? (
-                        Array.from({length: 2}).map((_, index) => (
-                            <Box
-                                key={index}
-                                borderRadius="lg"
-                                overflow="hidden"
-                                bg={bgWhiteGray}
-                                boxShadow="md"
-                            >
-                                <Skeleton height="300px"/>
-                                <Box p={4}>
-                                    <SkeletonText mt="4" noOfLines={4} spacing="4"/>
-                                </Box>
-                            </Box>
-                        ))
-                    ) : (
-                        user?.moodHistory.map((moodEntry) => (
-                            <MoodCard
-                                key={moodEntry.date}
-                                user={user}
-                                moodEntry={moodEntry}
-                                isCurrentUser={true}
-                            />
-                        ))
-                    )}
+                    <TabPanels>
+                        <TabPanel p={6}>
+                            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                                {isHistoryLoading ? (
+                                    Array.from({ length: 2 }).map((_, index) => (
+                                        <Box
+                                            key={index}
+                                            borderRadius="lg"
+                                            overflow="hidden"
+                                            bg={bgWhiteGray}
+                                            boxShadow="md"
+                                        >
+                                            <Skeleton height="300px" />
+                                            <Box p={4}>
+                                                <SkeletonText mt="4" noOfLines={4} spacing="4" />
+                                            </Box>
+                                        </Box>
+                                    ))
+                                ) : (
+                                    accountPosts.map((post) => (
+                                        <MoodCard
+                                            key={post.id}
+                                            user={post.author}
+                                            moodEntry={post}
+                                        />
+                                    ))
+                                )}
 
-                    {!isLoading && user?.moodHistory.length === 0 && (
-                        <Box
-                            p={6}
-                            borderRadius="lg"
-                            bg={bgGray50}
-                            textAlign="center"
-                        >
-                            <Text>No mood history yet. Take your first selfie!</Text>
-                        </Box>
-                    )}
-                </SimpleGrid>
+                                {!isHistoryLoading && accountPosts.length === 0 && (
+                                    <Box
+                                        p={6}
+                                        borderRadius="lg"
+                                        bg={bgGray50}
+                                        textAlign="center"
+                                    >
+                                        <Text>No mood history yet. Take your first selfie!</Text>
+                                    </Box>
+                                )}
+                            </SimpleGrid>
+                        </TabPanel>
+
+                        <TabPanel p={6}>
+{/*
+                            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
+                                {userNFTs.map((nft) => (
+                                    <Box
+                                        key={nft.id}
+                                        borderWidth="1px"
+                                        borderColor={useColorModeValue('gray.200', 'gray.700')}
+                                        borderRadius="lg"
+                                        overflow="hidden"
+                                        transition="transform 0.2s"
+                                        _hover={{ transform: 'translateY(-4px)' }}
+                                    >
+                                        <Image
+                                            src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600"
+                                            alt={`NFT ${nft.tokenId}`}
+                                            width="100%"
+                                            height="200px"
+                                            objectFit="cover"
+                                        />
+
+                                        <VStack p={4} align="stretch" spacing={3}>
+                                            <HStack justify="space-between">
+                                                <Badge colorScheme={nft.isListed ? 'green' : 'gray'}>
+                                                    {nft.isListed ? 'Listed' : 'Not Listed'}
+                                                </Badge>
+                                                {nft.isListed && (
+                                                    <HStack>
+                                                        <Coins size={16} />
+                                                        <Text fontWeight="bold">
+                                                            {ethers.formatEther(nft.price)} MOOD
+                                                        </Text>
+                                                    </HStack>
+                                                )}
+                                            </HStack>
+
+                                            <Text fontSize="sm" color="gray.500">
+                                                Minted: {formatDate(nft.mintedAt)}
+                                            </Text>
+
+                                            {nft.lastSoldAt && (
+                                                <Text fontSize="sm" color="gray.500">
+                                                    Last sold: {formatDate(nft.lastSoldAt)} for{' '}
+                                                    {ethers.formatEther(nft.lastSoldPrice || '0')} MOOD
+                                                </Text>
+                                            )}
+                                        </VStack>
+                                    </Box>
+                                ))}
+
+                                {userNFTs.length === 0 && (
+                                    <Box
+                                        p={6}
+                                        borderRadius="lg"
+                                        bg={useColorModeValue('gray.50', 'gray.700')}
+                                        textAlign="center"
+                                        gridColumn="1/-1"
+                                    >
+                                        <Text>No NFTs in your collection yet</Text>
+                                        <Button
+                                            as={RouterLink}
+                                            to="/nft/marketplace"
+                                            colorScheme="brand"
+                                            mt={4}
+                                        >
+                                            Browse Marketplace
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Grid>
 */}
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
             </Box>
 
             <EditProfileModal

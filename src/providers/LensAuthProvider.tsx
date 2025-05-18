@@ -25,6 +25,8 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
     const [isAuthenticating, setIsAuthenticating] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+    console.log("activeSession", activeSession, client)
+
     const restore = useCallback(async () => {
         try {
             const result = await lensPublicClient.resumeSession();
@@ -40,12 +42,13 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
             setClient(resumedClient);
 
             const sessionData = await currentSession(resumedClient);
+
             if (sessionData.isOk()) {
                 setActiveSession(sessionData.value);
             }
 
             if (walletAddress) {
-                setCurrentAccount(await getLastLoggedInAccount(walletAddress))
+                setCurrentAccount(await getLastLoggedInAccount(resumedClient, walletAddress))
             }
         } catch (err) {
             console.error('Restore failed:', err);
@@ -57,12 +60,12 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
     const refreshCurrentAccount = useCallback(async () => {
         try {
             if (walletAddress) {
-                setCurrentAccount(await getLastLoggedInAccount(walletAddress))
+                setCurrentAccount(await getLastLoggedInAccount(client, walletAddress))
             }
         } catch (err) {
             console.error('refreshCurrentAccount error:', err);
         }
-    }, [walletAddress]);
+    }, [client, walletAddress]);
 
     const authenticate = useCallback(
         async (

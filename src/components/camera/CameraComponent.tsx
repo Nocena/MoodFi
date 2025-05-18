@@ -28,6 +28,7 @@ import {useMoodStore} from '../../store/moodStore';
 import {dataURLtoFile, getMoodColor, getMoodEmoji} from "../../utils/common.utils.ts";
 import {postDailyMood} from "../../utils/lens.utils.ts";
 import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
+import {useDailyMoodStore} from "../../store/dailyMoodStore.ts";
 
 const CameraComponent: React.FC = () => {
     const webcamRef = useRef<Webcam>(null);
@@ -41,15 +42,18 @@ const CameraComponent: React.FC = () => {
     const [rewardAmount, setRewardAmount] = useState<number>(0);
     const [description, setDescription] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {client: sessionClient} = useLensAuth()
 
     const {
         detectMood,
         dailyMood,
-        todayMoodTaken,
-        isProcessing,
     } = useMoodStore();
+
+    const {
+        todayMoodTaken,
+    } = useDailyMoodStore();
 
     const toast = useToast();
 
@@ -141,15 +145,17 @@ const CameraComponent: React.FC = () => {
         if (!detectedMood || !capturedImage) return;
 
         try {
-
+            setIsSubmitting(true)
             if (!sessionClient || !imageFile)
                 throw new Error('')
 
             const postResult = await postDailyMood(
                 sessionClient,
                 imageFile,
-                detectedMood,
-                confidenceScore,
+                // detectedMood,
+                'disgusted',
+                // confidenceScore,
+                40,
                 0,
                 description,
             )
@@ -176,6 +182,8 @@ const CameraComponent: React.FC = () => {
                 isClosable: true,
             });
         }
+
+        setIsSubmitting(false)
     };
 
     const retake = () => {
@@ -224,7 +232,7 @@ const CameraComponent: React.FC = () => {
                             boxShadow="md"
                         />
 
-                        {(isAnalyzing || isProcessing) && (
+                        {isAnalyzing && (
                             <Center
                                 position="absolute"
                                 top={0}
@@ -373,7 +381,7 @@ const CameraComponent: React.FC = () => {
                         <Button
                             colorScheme="brand"
                             onClick={handleSubmit}
-                            isLoading={isProcessing}
+                            isLoading={isSubmitting}
                         >
                             Post & Claim Rewards
                         </Button>

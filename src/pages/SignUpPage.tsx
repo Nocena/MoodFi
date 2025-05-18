@@ -90,6 +90,10 @@ const SignUpPage: React.FC = () => {
       newErrors.username = 'Username must be at least 3 characters';
     }
 
+    if (!formData.bio.trim()) {
+      newErrors.bio = 'bio is required';
+    }
+
     if (!formData.name.trim()) {
       newErrors.name = 'Display name is required';
     }
@@ -235,7 +239,7 @@ const SignUpPage: React.FC = () => {
                       <FormErrorMessage>{errors.name}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl isInvalid={!!errors.bio}>
                       <FormLabel>Bio</FormLabel>
                       <Textarea
                           name="bio"
@@ -245,6 +249,7 @@ const SignUpPage: React.FC = () => {
                           resize="vertical"
                           rows={3}
                       />
+                      <FormErrorMessage>{errors.bio}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={!!errors.wallet}>
