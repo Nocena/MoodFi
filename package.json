@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:https": "node server.mjs",
+    "setup:https": "bash setup-https.sh",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -18,8 +20,12 @@
     "@lens-protocol/client": "^0.0.0-canary-20250430134539",
     "@lens-protocol/metadata": "^2.0.0",
     "@tanstack/react-query": "^5.76.0",
+    "@wagmi/core": "^2.17.2",
     "connectkit": "^1.8.2",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "ethers": "^6.13.4",
+    "face-api.js": "^0.22.2",
     "framer-motion": "^10.16.4",
     "lens-protocol": "^0.1.5",
     "lucide-react": "^0.344.0",
@@ -34,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/node": "22.15.18",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

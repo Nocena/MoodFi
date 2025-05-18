@@ -51,7 +51,7 @@ const generateMockNFTs = (count: number, startIndex: number = 0): NFTMarketItem[
     moodEntry: {
       id: `mood-${startIndex + i + 1}`,
       date: new Date(Date.now() - Math.random() * 30 * 86400000).toISOString(),
-      mood: ['happy', 'excited', 'calm', 'neutral'][Math.floor(Math.random() * 4)] as any,
+      mood: ['happy', 'sad', 'angry', 'disgusted', 'surprised', 'fearful'][Math.floor(Math.random() * 6)] as any,
       photo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600',
       reward: Math.random() > 0.5,
       comments: [],
