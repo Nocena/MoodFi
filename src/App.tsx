@@ -4,7 +4,7 @@ import {ChakraProvider} from '@chakra-ui/react';
 import theme from './theme';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
-import SignInPage from './pages/SignInPage.tsx';
+import SignInPage from './pages/SignInPage';
 import CameraPage from './pages/CameraPage';
 import ProfilePage from './pages/ProfilePage';
 import FollowersPage from './pages/FollowersPage';
@@ -16,6 +16,7 @@ import MyNFTsPage from './pages/MyNFTsPage';
 import {WalletProvider} from "./providers/WalletProvider";
 import {LensAuthProvider} from "./providers/LensAuthProvider";
 import SignUpPage from "./pages/SignUpPage";
+import PostPage from './pages/PostPage';
 
 function App() {
     return (
@@ -36,6 +37,7 @@ function App() {
                                 <Route path="notifications" element={<NotificationsPage/>}/>
                                 <Route path="nft/marketplace" element={<NFTMarketplacePage/>}/>
                                 <Route path="nft/my-nfts" element={<MyNFTsPage/>}/>
+                                <Route path="post/:postId" element={<PostPage />} />
                             </Route>
                             <Route path="*" element={<Navigate to="/" replace/>}/>
                         </Routes>

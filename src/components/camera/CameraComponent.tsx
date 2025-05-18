@@ -25,9 +25,9 @@ import {
 import {Camera, RefreshCw, Upload} from 'lucide-react';
 import {MOOD_TYPE} from '../../types';
 import {useMoodStore} from '../../store/moodStore';
-import {dataURLtoFile, getMoodColor, getMoodEmoji} from "../../utils/common.utils.ts";
-import {postDailyMood} from "../../utils/lens.utils.ts";
-import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
+import {dataURLtoFile, getMoodColor, getMoodEmoji} from "../../utils/common.utils";
+import {postDailyMood} from "../../utils/lens.utils";
+import {useLensAuth} from "../../providers/LensAuthProvider";
 
 const CameraComponent: React.FC = () => {
     const webcamRef = useRef<Webcam>(null);

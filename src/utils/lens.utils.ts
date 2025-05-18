@@ -1,19 +1,21 @@
 import {APP_ADDRESS, FEED_ADDRESS, lensPublicClient} from "../constants";
-import {AccountStatusType, AccountType, AuthorWithMood, MOOD_TYPE, MoodPostType} from "../types";
+import {AccountStatusType, AccountType, AuthorWithMood, CommentType, MOOD_TYPE, MoodPostType} from "../types";
 import {
+    addReaction,
     fetchAccount, fetchAccountRecommendations,
     fetchAccountsAvailable,
     fetchAccountStats,
     fetchFollowers,
-    fetchFollowing,
+    fetchFollowing, fetchPost, fetchPostReferences,
     fetchPosts,
     lastLoggedInAccount,
-    post,
+    post, undoReaction,
 } from "@lens-protocol/client/actions";
 import {type EvmAddress} from '@lens-protocol/types'
-import {image, MediaImageMimeType, MetadataAttributeType,} from "@lens-protocol/metadata"
-import {uploadMediaToGrove, uploadMetadataToGrove} from "./grove.utils.ts";
-import {SessionClient, uri} from "@lens-protocol/client";
+import {image, MediaImageMimeType, MetadataAttributeType, textOnly,} from "@lens-protocol/metadata"
+import {uploadMediaToGrove, uploadMetadataToGrove} from "./grove.utils";
+import {SessionClient, uri, postId} from "@lens-protocol/client";
+import {PostReactionType, PostReferenceType} from "@lens-protocol/graphql";
 
 const getAccountDataByRaw = (rawData: any): AccountType => {
     return {
@@ -25,7 +27,6 @@ const getAccountDataByRaw = (rawData: any): AccountType => {
         bio: rawData.metadata?.bio ?? '',
         isFollowedByMe: rawData.operations?.isFollowedByMe ?? false,
     }
-
 }
 
 const getMoodPostDataByRaw = (item: any): MoodPostType => {
@@ -38,13 +39,23 @@ const getMoodPostDataByRaw = (item: any): MoodPostType => {
         id: item.id,
         author: getAccountDataByRaw(item.author),
         content: item?.metadata?.content ?? '',
-        imageUrl: item?.metadata?.image.item ?? '',
+        imageUrl: item?.metadata?.image?.item ?? '',
         moodType,
         confidence,
         rewardTokenAmount,
         commentsCount: item.stats?.comments ?? 0,
         likesCount: item.stats?.upvotes ?? 0,
         timestamp: item.timestamp ?? (new Date()).toString(),
+        isLikedByMe: item.operations?.hasUpvoted ?? false,
+    }
+}
+
+const getMoodCommentDataByRaw = (item: any): CommentType => {
+    return {
+        id: item.id,
+        author: getAccountDataByRaw(item.author),
+        timestamp: item.timestamp ?? (new Date()).toString(),
+        content: item?.metadata?.content ?? '',
     }
 }
 
@@ -278,6 +289,56 @@ export const postDailyMood = async (
     return false
 }
 
+export const commentOnPost = async (
+    sessionClient: SessionClient,
+    id: string,
+    comment: string) => {
+    try {
+        const metadata = textOnly({
+            content: comment,
+        });
+
+        const metadataURI = await uploadMetadataToGrove(metadata);
+        const result = await post(sessionClient, {
+            commentOn: {
+                post: postId(id),
+            },
+            contentUri: uri(metadataURI.uri),
+            feed: FEED_ADDRESS,
+        });
+        return !result.isErr();
+    } catch (e) {
+        console.log('error', e)
+    }
+
+    return false
+}
+
+export const addReactionToPost = async (
+    sessionClient: SessionClient,
+    id: string,
+    isLike: boolean) => {
+    try {
+        let result = null
+        if (isLike) {
+            result = await addReaction(sessionClient, {
+                post: postId(id),
+                reaction: PostReactionType.Upvote
+            });
+        } else {
+            result = await undoReaction(sessionClient, {
+                post: postId(id),
+                reaction: PostReactionType.Upvote
+            });
+        }
+        return !result?.isErr();
+    } catch (e) {
+        console.log('error', e)
+    }
+
+    return false
+}
+
 export const getGlobalPosts = async (sessionClient: SessionClient | null, exceptAccountAddress: string): Promise<MoodPostType[]> => {
     try {
         const result = await fetchPosts(sessionClient ?? lensPublicClient, {
@@ -286,6 +347,7 @@ export const getGlobalPosts = async (sessionClient: SessionClient | null, except
                 feeds: [{
                     feed: FEED_ADDRESS as EvmAddress,
                 }],
+                postTypes: ["ROOT"],
             },
         });
 
@@ -314,6 +376,7 @@ export const getAccountPosts = async (sessionClient: SessionClient | null, accou
                 feeds: [{
                     feed: FEED_ADDRESS as EvmAddress,
                 }],
+                postTypes: ["ROOT"],
             },
         });
 
@@ -329,6 +392,52 @@ export const getAccountPosts = async (sessionClient: SessionClient | null, accou
         return items.map((item) => getMoodPostDataByRaw(item))
     } catch (e) {
         console.log("error getAccountPosts", e)
+        return [];
+    }
+}
+
+export const getPostByPostId = async (sessionClient: SessionClient | null, id: string): Promise<MoodPostType | null> => {
+    try {
+        const result = await fetchPost(sessionClient ?? lensPublicClient, {
+            post: postId(id),
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return null
+        }
+
+        if (!result.value)
+            return null
+        return getMoodPostDataByRaw(result.value)
+    } catch (e) {
+        console.log("error getPostByPostId", e)
+        return null;
+    }
+}
+
+export const getCommentsOfPostByPostId = async (sessionClient: SessionClient | null, id: string): Promise<CommentType[]> => {
+    try {
+        const result = await fetchPostReferences(sessionClient ?? lensPublicClient, {
+            pageSize: 'FIFTY',
+            relevancyFilter: 'RELEVANT',
+            visibilityFilter: 'VISIBLE',
+            referenceTypes: [PostReferenceType.CommentOn],
+            referencedPost: postId(id),
+        });
+
+        if (result.isErr()) {
+            console.error(result.error)
+            return []
+        }
+
+        const items = result.value.items
+        if (!items)
+            return []
+
+        return items.map((item) => getMoodCommentDataByRaw(item))
+    } catch (e) {
+        console.log("error getCommentsOfPostByPostId", e)
         return [];
     }
 }

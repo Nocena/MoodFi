@@ -1,26 +1,23 @@
-import React, {useState} from 'react';
-import {Link as RouterLink} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {
     Avatar,
     Badge,
-    Box,
-    Button,
-    Collapse,
+    Box, CircularProgress,
     Divider,
     Flex,
     HStack,
     IconButton,
     Image,
-    Input,
     Text,
-    Tooltip,
     useColorModeValue,
     VStack,
 } from '@chakra-ui/react';
-import {Heart, MessageCircle, Share2} from 'lucide-react';
+import {Heart, MessageCircle} from 'lucide-react';
 import {AccountType, MoodPostType} from '../../types';
-import {useSocialStore} from '../../store/socialStore';
-import {getMoodColor} from "../../utils/common.utils.ts";
+import {getMoodColor} from "../../utils/common.utils";
+import {addReactionToPost} from "../../utils/lens.utils";
+import {useLensAuth} from "../../providers/LensAuthProvider";
 
 interface MoodCardProps {
     user: AccountType;
@@ -28,35 +25,37 @@ interface MoodCardProps {
 }
 
 const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
-    const [isCommenting, setIsCommenting] = useState(false);
-    const [commentText, setCommentText] = useState('');
+    const {client} = useLensAuth()
     const [isLiked, setIsLiked] = useState(false);
-    const [isShared, setIsShared] = useState(false);
-    const {addComment} = useSocialStore();
-
+    const [isLikeLoading, setIsLikeLoading] = useState(false);
     const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.700');
+    const navigate = useNavigate()
 
-    const handleLike = () => {
-        setIsLiked(!isLiked);
-    };
-
-    const handleShare = () => {
-        setIsShared(true);
-        setTimeout(() => setIsShared(false), 2000);
-    };
-
-    const handleComment = async () => {
-        if (!commentText.trim()) return;
-
-        try {
-            await addComment(user.id, moodEntry.date, commentText);
-            setCommentText('');
-            setIsCommenting(false);
-        } catch (error) {
-            console.error('Failed to add comment:', error);
+    useEffect(() => {
+        if (moodEntry) {
+            setIsLiked(moodEntry.isLikedByMe ?? false);
         }
+    }, [moodEntry])
+
+    const handleLike = async (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsLikeLoading(true);
+        const result = await addReactionToPost(client!, moodEntry.id, !isLiked)
+        if (result)
+            setIsLiked(!isLiked);
+        setIsLikeLoading(false);
     };
+
+    const handleComment = () => {
+        navigate(`/post/${moodEntry.id}`)
+    }
+
+    const handleCardClick = () => {
+        if (moodEntry.commentsCount > 0)
+            navigate(`/post/${moodEntry.id}`)
+    }
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -75,6 +74,7 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
             borderColor={borderColor}
             borderRadius="lg"
             overflow="hidden"
+            cursor="pointer"
             boxShadow="sm"
             transition="transform 0.2s"
             _hover={{
@@ -82,6 +82,7 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
                 boxShadow: 'md',
             }}
             mb={4}
+            onClick={handleCardClick}
         >
             <Box p={4}>
                 <Flex justifyContent="space-between" alignItems="center" mb={4}>
@@ -151,14 +152,32 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
                         <HStack>
                             <IconButton
                                 aria-label="Like"
-                                icon={<Heart fill={isLiked ? "currentColor" : "none"}/>}
+                                icon={
+                                    isLikeLoading ? (
+                                        <CircularProgress
+                                            isIndeterminate
+                                            color="red.400"
+                                            size="20px"
+                                            thickness="10px"
+                                        />
+                                    ) : (
+                                        <Heart
+                                            fill={isLiked ? "currentColor" : "none"}
+                                            size={20}
+                                        />
+                                    )
+                                }
                                 onClick={handleLike}
                                 variant="ghost"
                                 colorScheme={isLiked ? "red" : "gray"}
                                 size="sm"
                             />
                             <Text fontSize="sm" color="gray.600">
-                                {moodEntry.likesCount + (isLiked ? 1 : 0)}
+                                {
+                                    moodEntry.likesCount
+                                    + (isLiked && !moodEntry.isLikedByMe ? 1 : 0)  // liked locally, wasn't liked before
+                                    - (!isLiked && moodEntry.isLikedByMe ? 1 : 0) // unliked locally, was liked before
+                                }
                             </Text>
                         </HStack>
 
@@ -166,7 +185,7 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
                             <IconButton
                                 aria-label="Comment"
                                 icon={<MessageCircle/>}
-                                onClick={() => setIsCommenting(!isCommenting)}
+                                onClick={handleComment}
                                 variant="ghost"
                                 colorScheme="gray"
                                 size="sm"
@@ -175,78 +194,12 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
                                 {moodEntry.commentsCount}
                             </Text>
                         </HStack>
-
-                        <Tooltip
-                            label={isShared ? "Shared!" : "Share mood"}
-                            placement="top"
-                            hasArrow
-                        >
-                            <IconButton
-                                aria-label="Share"
-                                icon={<Share2/>}
-                                onClick={handleShare}
-                                variant="ghost"
-                                colorScheme={isShared ? "green" : "gray"}
-                                size="sm"
-                            />
-                        </Tooltip>
                     </HStack>
 
                     <Text fontSize="sm" color="gray.500">
                         {formatDate(moodEntry.timestamp)}
                     </Text>
                 </Flex>
-
-                <Collapse in={isCommenting} animateOpacity>
-                    <Box mb={4}>
-                        <Flex>
-                            <Input
-                                placeholder="Add a comment..."
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                mr={2}
-                            />
-                            <Button
-                                colorScheme="brand"
-                                size="sm"
-                                onClick={handleComment}
-                                isDisabled={!commentText.trim()}
-                            >
-                                Post
-                            </Button>
-                        </Flex>
-                    </Box>
-                </Collapse>
-
-{/*
-                {moodEntry.comments.length > 0 && (
-                    <VStack spacing={2} align="stretch">
-                        {moodEntry.comments.map((comment) => (
-                            <Box
-                                key={comment.id}
-                                p={3}
-                                bg={useColorModeValue('gray.50', 'gray.700')}
-                                borderRadius="md"
-                            >
-                                <HStack align="flex-start" spacing={2}>
-                                    <Avatar size="xs" name="User"/>
-                                    <Box flex={1}>
-                                        <Text fontSize="sm">
-                                            <Text as="span" fontWeight="bold">@some-user</Text>
-                                            <Text as="span" color="gray.500" ml={2} fontSize="xs">
-                                                {formatDate(comment.timestamp)}
-                                            </Text>
-                                        </Text>
-                                        <Text fontSize="sm" mt={1}>
-                                            {comment.text}
-                                        </Text>
-                                    </Box>
-                                </HStack>
-                            </Box>
-                        ))}
-                    </VStack>
-                )}
-*/}
             </Box>
         </Box>
     );

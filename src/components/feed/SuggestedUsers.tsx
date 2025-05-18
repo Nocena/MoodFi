@@ -13,9 +13,9 @@ import {
     useColorModeValue,
     VStack,
 } from '@chakra-ui/react';
-import {getMoodColor} from "../../utils/common.utils.ts";
-import {useDailyMoodStore} from "../../store/dailyMoodStore.ts";
-import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
+import {getMoodColor} from "../../utils/common.utils";
+import {useDailyMoodStore} from "../../store/dailyMoodStore";
+import {useLensAuth} from "../../providers/LensAuthProvider";
 import {follow, unfollow} from "@lens-protocol/client/actions";
 
 const SuggestedUsers: React.FC = () => {

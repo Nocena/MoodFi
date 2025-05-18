@@ -136,6 +136,15 @@ export interface MoodPostType {
   commentsCount: number // item.stats.comments
   likesCount: number // item.stats.upvotes
   timestamp: string // item.timestamp
+
+  isLikedByMe?: boolean
+}
+
+export interface CommentType {
+  id: string
+  timestamp: string
+  content: string
+  author: AccountType
 }
 
 export interface AccountStatusType {

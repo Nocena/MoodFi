@@ -16,8 +16,8 @@ import {
 import {Camera, Podcast} from 'lucide-react';
 import MoodCard from '../components/feed/MoodCard';
 import SuggestedUsers from '../components/feed/SuggestedUsers';
-import {useLensAuth} from "../providers/LensAuthProvider.tsx";
-import {useDailyMoodStore} from "../store/dailyMoodStore.ts";
+import {useLensAuth} from "../providers/LensAuthProvider";
+import {useDailyMoodStore} from "../store/dailyMoodStore";
 
 const HomePage: React.FC = () => {
     const {isAuthenticated, currentAccount, client} = useLensAuth();

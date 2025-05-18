@@ -25,10 +25,10 @@ import {
 import {Calendar, Edit, Users, UserX} from 'lucide-react';
 import MoodCard from '../components/feed/MoodCard';
 import EditProfileModal from '../components/profile/EditProfileModal';
-import {useLensAuth} from "../providers/LensAuthProvider.tsx";
-import {fetchAccountByUserName, getAccountPosts, getAccountStats} from "../utils/lens.utils.ts";
+import {useLensAuth} from "../providers/LensAuthProvider";
+import {fetchAccountByUserName, getAccountPosts, getAccountStats} from "../utils/lens.utils";
 import {MoodPostType, ProfileDataType} from "../types";
-import {formatDate} from "../utils/common.utils.ts";
+import {formatDate} from "../utils/common.utils";
 import {follow, unfollow} from "@lens-protocol/client/actions";
 
 const ProfilePage: React.FC = () => {

@@ -9,6 +9,23 @@ export const formatDate = (dateString: string) => {
     });
 };
 
+export const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    if (diffHours < 1) {
+        return 'Just now';
+    } else if (diffHours < 24) {
+        return `${diffHours}h ago`;
+    } else {
+        const diffDays = Math.floor(diffHours / 24);
+        return `${diffDays}d ago`;
+    }
+};
+
+
 /**
  * Convert a base‑64 data‑URL to a File object.
  * Uses fetch() so it’s async and streams efficiently.
