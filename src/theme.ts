@@ -16,8 +16,10 @@ const colors = {
   mood: {
     happy: '#FFD166',
     sad: '#118AB2',
-    excited: '#EF476F',
-    calm: '#06D6A0',
+    angry: '#E63946',
+    disgusted: '#7B6D8D',
+    surprised: '#F77F00',
+    fearful: '#7209B7',
     neutral: '#073B4C',
   },
 };

@@ -31,7 +31,7 @@ export interface MoodEntry {
   nftData?: NFT;
 }
 
-export type MOOD_TYPE = 'happy' | 'sad' | 'excited' | 'calm' | 'neutral';
+export type MOOD_TYPE = 'happy' | 'sad' | 'angry' | 'disgusted' | 'surprised' | 'fearful' | 'neutral';
 
 export interface Comment {
   id: string;

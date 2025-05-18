@@ -25,10 +25,14 @@ export const getMoodColor = (mood: MOOD_TYPE) => {
             return 'yellow';
         case 'sad':
             return 'blue';
-        case 'excited':
-            return 'pink';
-        case 'calm':
-            return 'green';
+        case 'angry':
+            return 'red';
+        case 'disgusted':
+            return 'purple';
+        case 'surprised':
+            return 'orange';
+        case 'fearful':
+            return 'violet';
         case 'neutral':
             return 'gray';
     }
@@ -40,10 +44,14 @@ export const getMoodEmoji = (mood: MOOD_TYPE) => {
             return '😊';
         case 'sad':
             return '😢';
-        case 'excited':
-            return '😃';
-        case 'calm':
-            return '😌';
+        case 'angry':
+            return '😡';
+        case 'disgusted':
+            return '🤢';
+        case 'surprised':
+            return '😲';
+        case 'fearful':
+            return '😨';
         case 'neutral':
             return '😐';
     }

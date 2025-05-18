@@ -67,7 +67,7 @@ export const useMoodStore = create<MoodState>(
     (set, get) => ({
         dailyMood: {
             date: new Date().toISOString(),
-            mood: 'happy', // Today's selected mood is "happy"
+            mood: 'sad', // Today's selected mood is "happy"
         },
         userMoods: [],
         todayMoodTaken: false,
@@ -77,16 +77,16 @@ export const useMoodStore = create<MoodState>(
 
         detectMood: async (photoUrl: string) => {
             set({isProcessing: true, error: null});
-
+        
             try {
                 // Simulate mood detection API call
                 await new Promise(resolve => setTimeout(resolve, 2000));
-
+        
                 // For demo purposes, we're returning a random mood
                 // In a real app, this would be determined by AI analysis
-                const moods: MOOD_TYPE[] = ['happy', 'sad', 'excited', 'calm', 'neutral'];
+                const moods: MOOD_TYPE[] = ['happy', 'sad', 'angry', 'disgusted', 'surprised', 'fearful'];
                 const detectedMood = moods[Math.floor(Math.random() * moods.length)];
-
+        
                 set({isProcessing: false});
                 return detectedMood;
             } catch (error) {
