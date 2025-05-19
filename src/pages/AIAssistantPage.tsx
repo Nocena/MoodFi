@@ -13,9 +13,7 @@ import {
   HStack,
   Image
 } from '@chakra-ui/react';
-import { CloseIcon } from '@chakra-ui/icons';
 import { useLensAuth } from "../providers/LensAuthProvider";
-import AITherapyLayout from '../components/therapy/AITherapyLayout';
 import VoiceChat from '../components/therapy/AIAssistantModal';
 import LiveCameraFeed from '../components/therapy/LiveCameraFeed';
 import AIBlob from '../components/therapy/AIBlob';
@@ -46,6 +44,8 @@ const VoiceTherapyPage: React.FC = () => {
         borderColor="gray.800"
         alignItems="center"
         justifyContent="space-between"
+        position="relative"
+        zIndex={5}
       >
         <HStack spacing={2}>
           <Image 
@@ -126,12 +126,12 @@ const VoiceTherapyPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Camera Feed - Positioned in top right corner */}
+        {/* Camera Feed - Positioned below the header */}
         <Box
           position="absolute"
-          top={10}
+          top="80px"
           right={4}
-          zIndex={10}
+          zIndex={20}
           borderRadius="lg"
           overflow="hidden"
           width="180px"

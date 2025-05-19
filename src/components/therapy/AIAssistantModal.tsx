@@ -400,10 +400,6 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
         right="20px"
         color="rgba(138, 110, 255, 0.8)"
       >
-        {/* Use any brain icon you have available */}
-        <Box as="span" fontSize="2xl">
-          🧠
-        </Box>
       </Box>
     </Box>
   );

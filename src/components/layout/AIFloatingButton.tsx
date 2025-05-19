@@ -1,14 +1,21 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Image, useColorModeValue } from '@chakra-ui/react';
 
 const AIFloatingButton: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const bgColor = useColorModeValue('white', 'gray.800');
+  
+  // Check if the current route is the AI assistant page
+  const isActive = location.pathname === '/ai-assistant';
   
   const handleClick = () => {
     navigate('/ai-assistant');
   };
+  
+  // If the button is active (user is on the AI assistant page), don't render it
+  if (isActive) return null;
   
   return (
     <Box
