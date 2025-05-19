@@ -1,34 +1,16 @@
-import { BigNumberish } from 'ethers';
 import {AuthenticatedSession, SessionClient} from "@lens-protocol/client";
 
-export interface User {
-  id: string;
-  username: string;
-  name: string;
-  avatar: string;
-  bio: string;
-  location?: string;
-  followers: string[];
-  following: string[];
-  moodHistory: MoodEntry[];
-  isOnline: boolean;
-  lastActive: string;
-  joinedDate: string;
-  tokenBalance: BigNumberish;
-  nfts: NFT[];
-}
 
-export interface MoodEntry {
-  id: string;
-  date: string;
-  mood: MOOD_TYPE;
-  photo: string;
-  reward: boolean;
-  comments: Comment[];
-  likes: string[];
-  socialScore: number;
-  isNFT: boolean;
-  nftData?: NFT;
+export interface MoodNFT {
+  tokenId: number;             // Unique token ID
+  postId: string;              // Associated post ID (e.g., Lens post)
+  userName: string;            // Display name of the user
+  accountAddress: string;      // Pseudo-account, not the wallet address
+  moodType: string;            // Mood category or type
+  imageUri: string;            // Image link (IPFS, HTTPS, etc.)
+  price: bigint;               // Price in NOCX tokens (use bigint for precision)
+  owner: `0x${string}`;        // Current wallet address of owner
+  isListed: boolean;           // Whether NFT is listed for sale
 }
 
 export type MOOD_TYPE =
@@ -76,26 +58,6 @@ export interface Notification {
 export interface DailyMood {
   date: string;
   mood: MOOD_TYPE;
-}
-
-export interface NFT {
-  id: string;
-  tokenId: string;
-  moodEntryId: string;
-  creatorId: string;
-  ownerId: string;
-  price: BigNumberish;
-  isListed: boolean;
-  createdAt: string;
-  mintedAt: string;
-  lastSoldAt?: string;
-  lastSoldPrice?: BigNumberish;
-}
-
-export interface NFTMarketItem {
-  nft: NFT;
-  creator: User;
-  moodEntry: MoodEntry;
 }
 
 export type LensAuthContextType = {

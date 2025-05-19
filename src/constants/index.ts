@@ -42,4 +42,4 @@ export const thirdwebClientServer = createThirdwebClient({
 });
 
 export const NOCX_ADDRESS = '0xff37F413099547A2B237EE04a12cacec6583b4dB'
-export const NFT_MARKETPLACE_ADDRESS = '0x183731e6308794876086a2e7bd9F1C2DEfa204Dd'
+export const MARKETPLACE_ADDRESS = '0x183731e6308794876086a2e7bd9F1C2DEfa204Dd'

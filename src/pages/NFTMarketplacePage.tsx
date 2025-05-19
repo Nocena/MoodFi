@@ -19,7 +19,7 @@ import {
 import {ethers} from 'ethers';
 import {useNFTStore} from '../store/nftStore';
 import {ChevronLeft, ChevronRight, Coins} from 'lucide-react';
-import {useLensAuth} from "../providers/LensAuthProvider.tsx";
+import {useLensAuth} from "../providers/LensAuthProvider";
 
 const NFTMarketplacePage: React.FC = () => {
   const { isAuthenticated } = useLensAuth();
