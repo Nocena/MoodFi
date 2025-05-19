@@ -1,21 +1,10 @@
 // src/components/camera/CameraView.tsx
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import Webcam from 'react-webcam';
-import {
-    Box, 
-    Center,
-    Spinner,
-    Text,
-    VStack,
-    Badge,
-    Flex,
-    HStack,
-    Button
-} from '@chakra-ui/react';
-import { Camera, Upload } from 'lucide-react';
-import { dataURLtoFile, getMoodColor, getMoodEmoji } from "../../utils/common.utils";
-import { formatEmotion, getEmotionEmoji } from '../../utils/faceVerification';
-import { verifyFace } from '../../utils/faceVerification';
+import {Badge, Box, Button, Center, Flex, HStack, Spinner, Text, useColorModeValue, VStack} from '@chakra-ui/react';
+import {Camera, Upload} from 'lucide-react';
+import {dataURLtoFile, getMoodEmoji} from "../../utils/common.utils";
+import {formatEmotion, getEmotionEmoji, verifyFace} from '../../utils/faceVerification';
 
 interface CameraViewProps {
     dailyMood: any;
@@ -162,8 +151,8 @@ const CameraView: React.FC<CameraViewProps> = ({
     }, [isTrainingMode, analyzeFacialEmotion]);
 
     // Get color scheme based on mode
-    const colorScheme = isTrainingMode ? "purple" : "blue";
-    
+    const bgColor = useColorModeValue('purple.50', 'blue.800');
+
     // Get emoji for current detected emotion
     const detectedEmoji = currentDetectedEmotion ? getEmotionEmoji(currentDetectedEmotion.toLowerCase()) : "❓";
 
@@ -171,7 +160,7 @@ const CameraView: React.FC<CameraViewProps> = ({
         <VStack spacing={4}>
             {/* Daily mood indicator */}
             <Box 
-                bg={isTrainingMode ? "red.100" : (dailyMood?.mood ? `${getMoodColor(dailyMood.mood)}.100` : 'gray.100')}
+                bg={bgColor}
                 p={4}
                 borderRadius="md"
                 width="full"

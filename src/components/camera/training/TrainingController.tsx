@@ -1,6 +1,6 @@
 // src/components/camera/training/TrainingController.tsx
 import React from 'react';
-import { Box, Button, HStack, Text, VStack, Progress, Badge } from '@chakra-ui/react';
+import {Box, Button, HStack, Text, VStack, Progress, Badge, useColorModeValue} from '@chakra-ui/react';
 import { Play, Clock } from 'lucide-react';
 
 interface TrainingControllerProps {
@@ -25,15 +25,15 @@ const TrainingController: React.FC<TrainingControllerProps> = ({
 
     // Calculate progress percentage
     const progress = (currentChallenge / totalChallenges) * 100;
+    const bgColor = useColorModeValue('purple.50', 'violet.800');
 
     if (!isActive) {
         return (
             <Box 
                 p={4} 
                 borderRadius="md" 
-                bg="purple.50" 
+                bg={bgColor}
                 borderWidth="1px" 
-                borderColor="purple.200"
                 textAlign="center"
             >
                 <VStack spacing={4}>
@@ -56,7 +56,7 @@ const TrainingController: React.FC<TrainingControllerProps> = ({
     }
 
     return (
-        <Box p={3} borderRadius="md" bg="purple.50" borderWidth="1px" borderColor="purple.200">
+        <Box p={3} borderRadius="md" bg={bgColor} borderWidth="1px">
             <VStack spacing={3}>
                 <HStack width="100%" justifyContent="space-between">
                     <Badge colorScheme="purple" fontSize="md">

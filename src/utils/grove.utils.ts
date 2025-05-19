@@ -1,5 +1,5 @@
 import {immutable, StorageClient} from "@lens-chain/storage-client";
-import {thirdwebLensTestnet} from "../constants";
+import {lensTestnet} from "wagmi/chains";
 
 export const uploadMediaToGrove = async (file: File) => {
     if (!file) {
@@ -8,7 +8,7 @@ export const uploadMediaToGrove = async (file: File) => {
     const storageClient = StorageClient.create();
 
     const acl = immutable(
-        thirdwebLensTestnet.id
+        lensTestnet.id
     );
 
     return await storageClient.uploadFile(file, {acl});
@@ -22,7 +22,7 @@ export const uploadMetadataToGrove = async (metadata: object) => {
     const storageClient = StorageClient.create();
 
     const acl = immutable(
-        thirdwebLensTestnet.id
+        lensTestnet.id
     );
 
     return await storageClient.uploadAsJson(metadata, {acl});

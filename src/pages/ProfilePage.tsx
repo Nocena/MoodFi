@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {Link as RouterLink, useParams} from 'react-router-dom';
 import {
-    Avatar,
+    Avatar, Badge,
     Box,
     Button,
     Center,
-    Flex,
+    Flex, Grid,
     Heading,
     HStack,
+    Image,
     Link,
     SimpleGrid,
     Skeleton,
@@ -22,17 +23,20 @@ import {
     useColorModeValue,
     VStack,
 } from '@chakra-ui/react';
-import {Calendar, Edit, Users, UserX} from 'lucide-react';
+import {Calendar, Coins, Edit, Users, UserX} from 'lucide-react';
 import MoodCard from '../components/feed/MoodCard';
 import EditProfileModal from '../components/profile/EditProfileModal';
 import {useLensAuth} from "../providers/LensAuthProvider";
 import {fetchAccountByUserName, getAccountPosts, getAccountStats} from "../utils/lens.utils";
-import {MoodPostType, ProfileDataType} from "../types";
+import {MoodNFT, MoodPostType, ProfileDataType} from "../types";
 import {formatDate} from "../utils/common.utils";
 import {follow, unfollow} from "@lens-protocol/client/actions";
+import {useNFTStore} from "../store/nftStore";
+import {ethers} from "ethers";
 
 const ProfilePage: React.FC = () => {
     const {client, currentAccount} = useLensAuth();
+    const {fetchAccountNFTs} = useNFTStore();
     const {name} = useParams();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +44,7 @@ const ProfilePage: React.FC = () => {
     const [isFollowLoading, setIsFollowLoading] = useState(false);
     const [isError, setIsError] = useState(false);
     const [accountPosts, setAccountPosts] = useState<MoodPostType[]>([])
+    const [accountNFTs, setAccountNFTs] = useState<MoodNFT[]>([])
     const [profileData, setProfileData] = useState<ProfileDataType>({
         followers: 0,
         following: 0,
@@ -55,7 +60,6 @@ const ProfilePage: React.FC = () => {
     const userName = name as string
 
     useEffect(() => {
-
         (async () => {
             try {
                 const selectedAccount = await fetchAccountByUserName(client, userName)
@@ -83,6 +87,9 @@ const ProfilePage: React.FC = () => {
 
                 const posts = await getAccountPosts(client, selectedAccount.accountAddress)
                 setAccountPosts(posts)
+
+                const nfts = await fetchAccountNFTs(selectedAccount.accountAddress)
+                setAccountNFTs(nfts)
                 setIsHistoryLoading(false)
             } catch (e) {
                 console.log("error", e)
@@ -90,7 +97,8 @@ const ProfilePage: React.FC = () => {
                 setIsHistoryLoading(false)
             }
         })()
-    }, [client, currentAccount, userName]);
+
+    }, [client, currentAccount, fetchAccountNFTs, userName]);
 
     const bgGray50 = useColorModeValue('gray.50', 'gray.700')
     const bgWhiteGray = useColorModeValue('white', 'gray.800')
@@ -315,11 +323,10 @@ const ProfilePage: React.FC = () => {
                         </TabPanel>
 
                         <TabPanel p={6}>
-{/*
                             <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
-                                {userNFTs.map((nft) => (
+                                {accountNFTs.map((nft) => (
                                     <Box
-                                        key={nft.id}
+                                        key={nft.tokenId}
                                         borderWidth="1px"
                                         borderColor={useColorModeValue('gray.200', 'gray.700')}
                                         borderRadius="lg"
@@ -328,7 +335,7 @@ const ProfilePage: React.FC = () => {
                                         _hover={{ transform: 'translateY(-4px)' }}
                                     >
                                         <Image
-                                            src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600"
+                                            src={nft.imageUri}
                                             alt={`NFT ${nft.tokenId}`}
                                             width="100%"
                                             height="200px"
@@ -337,34 +344,23 @@ const ProfilePage: React.FC = () => {
 
                                         <VStack p={4} align="stretch" spacing={3}>
                                             <HStack justify="space-between">
-                                                <Badge colorScheme={nft.isListed ? 'green' : 'gray'}>
-                                                    {nft.isListed ? 'Listed' : 'Not Listed'}
-                                                </Badge>
+                                                <Text fontSize="sm" color="gray.500">
+                                                    Mood: {nft.moodType.toUpperCase()}
+                                                </Text>
                                                 {nft.isListed && (
                                                     <HStack>
                                                         <Coins size={16} />
                                                         <Text fontWeight="bold">
-                                                            {ethers.formatEther(nft.price)} MOOD
+                                                            {ethers.formatEther(nft.price)} NOCX
                                                         </Text>
                                                     </HStack>
                                                 )}
                                             </HStack>
-
-                                            <Text fontSize="sm" color="gray.500">
-                                                Minted: {formatDate(nft.mintedAt)}
-                                            </Text>
-
-                                            {nft.lastSoldAt && (
-                                                <Text fontSize="sm" color="gray.500">
-                                                    Last sold: {formatDate(nft.lastSoldAt)} for{' '}
-                                                    {ethers.formatEther(nft.lastSoldPrice || '0')} MOOD
-                                                </Text>
-                                            )}
                                         </VStack>
                                     </Box>
                                 ))}
 
-                                {userNFTs.length === 0 && (
+                                {accountNFTs.length === 0 && (
                                     <Box
                                         p={6}
                                         borderRadius="lg"
@@ -384,7 +380,6 @@ const ProfilePage: React.FC = () => {
                                     </Box>
                                 )}
                             </Grid>
-*/}
                         </TabPanel>
                     </TabPanels>
                 </Tabs>

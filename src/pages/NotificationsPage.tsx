@@ -4,7 +4,7 @@ import {Avatar, Box, Divider, Flex, Heading, Text, useColorModeValue, VStack,} f
 import {Award, Bell, Heart, MessageCircle, UserPlus} from 'lucide-react';
 import {useSocialStore} from '../store/socialStore';
 import {Notification} from '../types';
-import {useLensAuth} from "../providers/LensAuthProvider.tsx";
+import {useLensAuth} from "../providers/LensAuthProvider";
 
 const NotificationsPage: React.FC = () => {
   const { isAuthenticated } = useLensAuth();

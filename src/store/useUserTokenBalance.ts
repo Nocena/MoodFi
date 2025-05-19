@@ -23,7 +23,7 @@ export const useUserTokenBalance = create<UserTokenBalanceState>((set) => ({
         address: NOCX_ADDRESS,
         abi: erc20Abi,
         functionName: 'balanceOf',
-        args: [address],
+        args: [address as `0x${string}`],
       })
 
       set({
