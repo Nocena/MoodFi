@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {Link as RouterLink, useParams} from 'react-router-dom';
 import {
-    Avatar, Badge,
+    Avatar,
     Box,
     Button,
     Center,
-    Flex, Grid,
+    Flex,
+    Grid,
     Heading,
     HStack,
     Image,
@@ -33,10 +34,12 @@ import {formatDate} from "../utils/common.utils";
 import {follow, unfollow} from "@lens-protocol/client/actions";
 import {useNFTStore} from "../store/nftStore";
 import {ethers} from "ethers";
+import {useAccount} from "wagmi";
 
 const ProfilePage: React.FC = () => {
+    const {address: walletAddress} = useAccount()
     const {client, currentAccount} = useLensAuth();
-    const {fetchAccountNFTs} = useNFTStore();
+    const {allNFTs, fetchListings} = useNFTStore();
     const {name} = useParams();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +62,14 @@ const ProfilePage: React.FC = () => {
     })
     const userName = name as string
 
+    useEffect(() => {
+        fetchListings()
+    }, [])
+
+    useEffect(() => {
+        setAccountNFTs(allNFTs.filter(NFT => NFT.owner === walletAddress))
+    }, [allNFTs, walletAddress]);
+    
     useEffect(() => {
         (async () => {
             try {
@@ -87,9 +98,6 @@ const ProfilePage: React.FC = () => {
 
                 const posts = await getAccountPosts(client, selectedAccount.accountAddress)
                 setAccountPosts(posts)
-
-                const nfts = await fetchAccountNFTs(selectedAccount.accountAddress)
-                setAccountNFTs(nfts)
                 setIsHistoryLoading(false)
             } catch (e) {
                 console.log("error", e)
@@ -98,7 +106,7 @@ const ProfilePage: React.FC = () => {
             }
         })()
 
-    }, [client, currentAccount, fetchAccountNFTs, userName]);
+    }, [client, currentAccount, userName]);
 
     const bgGray50 = useColorModeValue('gray.50', 'gray.700')
     const bgWhiteGray = useColorModeValue('white', 'gray.800')
@@ -347,14 +355,14 @@ const ProfilePage: React.FC = () => {
                                                 <Text fontSize="sm" color="gray.500">
                                                     Mood: {nft.moodType.toUpperCase()}
                                                 </Text>
-                                                {nft.isListed && (
+                                                {/*{nft.isListed && (*/}
                                                     <HStack>
                                                         <Coins size={16} />
                                                         <Text fontWeight="bold">
                                                             {ethers.formatEther(nft.price)} NOCX
                                                         </Text>
                                                     </HStack>
-                                                )}
+                                                {/*)}*/}
                                             </HStack>
                                         </VStack>
                                     </Box>
