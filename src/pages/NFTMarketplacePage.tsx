@@ -1,227 +1,202 @@
 import React, {useEffect, useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Flex,
-  Grid,
-  Heading,
-  HStack,
-  Image,
-  Select,
-  Text,
-  useColorModeValue,
-  useToast,
-  VStack,
+    Avatar,
+    Box,
+    Button,
+    Grid,
+    Heading,
+    HStack,
+    Image,
+    Text,
+    useColorModeValue,
+    useToast,
+    VStack,
 } from '@chakra-ui/react';
 import {ethers} from 'ethers';
 import {useNFTStore} from '../store/nftStore';
-import {ChevronLeft, ChevronRight, Coins} from 'lucide-react';
+import {Coins} from 'lucide-react';
 import {useLensAuth} from "../providers/LensAuthProvider";
+import {useAccount, useSwitchChain} from "wagmi";
+import {MoodNFT} from "../types";
+import {useUserTokenBalance} from "../store/useUserTokenBalance";
+import {lensTestnet} from "wagmi/chains";
 
 const NFTMarketplacePage: React.FC = () => {
-  const { isAuthenticated } = useLensAuth();
-  const { marketItems, loadMarketItems, buyNFT, isLoading, totalMarketItems } = useNFTStore();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(9);
-  const toast = useToast();
+    const {isAuthenticated, currentAccount} = useLensAuth();
+    const {chainId, address: walletAddress} = useAccount()
+    const {switchChain} = useSwitchChain()
+    const {
+        allNFTs,
+        fetchListings,
+        buyNFT,
+    } = useNFTStore();
+    const {
+        refreshTokenBalance,
+        balanceAmount
+    } = useUserTokenBalance()
+    const [marketNFTs, setMarketNFTs] = useState<MoodNFT[]>([])
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
+    const cardBg = useColorModeValue('white', 'gray.800');
+    const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+    useEffect(() => {
+        fetchListings()
+    }, []);
 
-  const totalPages = Math.ceil(totalMarketItems / itemsPerPage);
+    useEffect(() => {
+        setMarketNFTs(allNFTs.filter(NFT => NFT.owner !== walletAddress))
+    }, [allNFTs, walletAddress]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadMarketItems(currentPage, itemsPerPage);
+    const handleBuyNFT = async (nft: MoodNFT) => {
+        try {
+            if (!currentAccount || !nft) return;
+
+            if (ethers.getBigInt(balanceAmount) < ethers.getBigInt(nft.price.toString())) {
+                toast({
+                    title: 'Insufficient balance',
+                    description: 'You don\'t have enough tokens to purchase this NFT',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+                return;
+            }
+
+            setIsLoading(true)
+            await buyNFT(nft.tokenId, nft.price);
+
+            toast({
+                title: 'Success!',
+                description: 'You have successfully purchased the NFT',
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+            });
+            refreshTokenBalance(walletAddress!)
+            setMarketNFTs(nfts => nfts.filter(item => item.tokenId !== nft.tokenId))
+        } catch (error) {
+            console.log("error", error)
+            toast({
+                title: 'Error',
+                description: 'Failed to purchase NFT',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+        setIsLoading(false)
+    };
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login"/>;
     }
-  }, [isAuthenticated, currentPage, itemsPerPage]);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo(0, 0);
-  };
-
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLimit = parseInt(e.target.value);
-    setItemsPerPage(newLimit);
-    setCurrentPage(1);
-  };
-
-  const handleBuyNFT = async (nftId: string, price: ethers.BigNumberish) => {
-    try {
-      if (!user) return;
-
-      if (ethers.getBigInt(user.tokenBalance.toString()) < ethers.getBigInt(price.toString())) {
-        toast({
-          title: 'Insufficient balance',
-          description: 'You don\'t have enough tokens to purchase this NFT',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      await buyNFT(nftId);
-      
-      toast({
-        title: 'Success!',
-        description: 'You have successfully purchased the NFT',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to purchase NFT',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  return (
-    <Box>
-      <Box mb={8}>
-        <Heading mb={2}>NFT Marketplace</Heading>
-        <Text color="gray.600" _dark={{ color: 'gray.300' }}>
-          Discover and collect unique mood NFTs
-        </Text>
-      </Box>
-
-      <HStack mb={6} justify="flex-end">
-        <Text>Items per page:</Text>
-        <Select
-          value={itemsPerPage}
-          onChange={handleItemsPerPageChange}
-          width="auto"
-        >
-          <option value={9}>9</option>
-          <option value={18}>18</option>
-          <option value={27}>27</option>
-        </Select>
-      </HStack>
-
-      <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
-        {marketItems.map((item) => (
-          <Box
-            key={item.nft.id}
-            borderWidth="1px"
-            borderColor={borderColor}
-            borderRadius="lg"
-            overflow="hidden"
-            bg={cardBg}
-            transition="transform 0.2s"
-            _hover={{ transform: 'translateY(-4px)' }}
-          >
-            <Image
-              src={item.moodEntry.photo}
-              alt={`Mood NFT by ${item.creator.name}`}
-              width="100%"
-              height="300px"
-              objectFit="cover"
-            />
-
-            <VStack p={4} align="stretch" spacing={4}>
-              <HStack justify="space-between">
-                <HStack>
-                  <Avatar
-                    size="sm"
-                    src={item.creator.avatar}
-                    name={item.creator.name}
-                  />
-                  <Box>
-                    <Text fontWeight="medium">{item.creator.name}</Text>
-                    <Text fontSize="sm" color="gray.500">@{item.creator.username}</Text>
-                  </Box>
-                </HStack>
-                <Badge colorScheme="purple">
-                  Score: {item.moodEntry.socialScore}
-                </Badge>
-              </HStack>
-
-              <Box>
-                <Text fontSize="sm" color="gray.500">
-                  Mood: {item.moodEntry.mood.toUpperCase()}
+    return (
+        <Box>
+            <Box mb={8}>
+                <Heading mb={2}>NFT Marketplace</Heading>
+                <Text color="gray.600" _dark={{color: 'gray.300'}}>
+                    Discover and collect unique mood NFTs
                 </Text>
-                <HStack mt={2}>
-                  <Coins size={20} />
-                  <Text fontWeight="bold">
-                    {ethers.formatEther(item.nft.price)} MOOD
-                  </Text>
-                </HStack>
-              </Box>
+            </Box>
 
-              <Button
-                colorScheme="brand"
-                isLoading={isLoading}
-                onClick={() => handleBuyNFT(item.nft.id, item.nft.price)}
-              >
-                Buy Now
-              </Button>
-            </VStack>
-          </Box>
-        ))}
-      </Grid>
+            <Grid templateColumns={{base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)'}} gap={6}>
+                {marketNFTs.map((nft) => (
+                    <Box
+                        key={nft.tokenId}
+                        borderWidth="1px"
+                        borderColor={borderColor}
+                        borderRadius="lg"
+                        overflow="hidden"
+                        bg={cardBg}
+                        transition="transform 0.2s"
+                        _hover={{transform: 'translateY(-4px)'}}
+                    >
+                        <Image
+                            src={nft.imageUri}
+                            alt={`Mood NFT by ${nft.userName}`}
+                            width="100%"
+                            height="300px"
+                            objectFit="cover"
+                        />
 
-      {marketItems.length === 0 && (
-        <Box
-          p={8}
-          borderRadius="lg"
-          bg={cardBg}
-          borderWidth="1px"
-          borderColor={borderColor}
-          textAlign="center"
-        >
-          <Text>No NFTs available in the marketplace</Text>
+                        <VStack p={4} align="stretch" spacing={4}>
+                            <HStack justify="space-between">
+                                <HStack>
+                                    <Avatar
+                                        size="sm"
+                                        src={''}
+                                        name={nft.userName}
+                                    />
+                                    <Box>
+                                        <Text fontSize="sm" color="gray.500">@{nft.userName}</Text>
+                                    </Box>
+                                </HStack>
+                                {/*
+                                <Badge colorScheme="purple">
+                                    Score: {item.moodEntry.socialScore}
+                                </Badge>
+*/}
+                            </HStack>
+
+                            <Box>
+                                <Text fontSize="sm" color="gray.500">
+                                    Mood: {nft.moodType.toUpperCase()}
+                                </Text>
+                                <HStack mt={2}>
+                                    <Coins size={20}/>
+                                    <Text fontWeight="bold">
+                                        {ethers.formatEther(nft.price)} NOCX
+                                    </Text>
+                                </HStack>
+                            </Box>
+
+                            {
+                                chainId === lensTestnet.id ? (
+                                    <Button
+                                        colorScheme="brand"
+                                        isLoading={isLoading}
+                                        onClick={() => handleBuyNFT(nft)}
+                                    >
+                                        Buy Now
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        colorScheme="brand"
+                                        onClick={async () => {
+                                            setIsLoading(true)
+                                            await switchChain({
+                                                chainId: lensTestnet.id
+                                            })
+                                            setIsLoading(false)
+                                        }}
+                                        isLoading={isLoading}
+                                    >
+                                        switch to lens chain
+                                    </Button>
+                                )
+                            }
+                        </VStack>
+                    </Box>
+                ))}
+            </Grid>
+
+            {marketNFTs.length === 0 && (
+                <Box
+                    p={8}
+                    borderRadius="lg"
+                    bg={cardBg}
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    textAlign="center"
+                >
+                    <Text>No NFTs available in the marketplace</Text>
+                </Box>
+            )}
         </Box>
-      )}
-
-      {totalPages > 1 && (
-        <Flex justify="center" align="center" mt={8} gap={2}>
-          <Button
-            leftIcon={<ChevronLeft size={20} />}
-            onClick={() => handlePageChange(currentPage - 1)}
-            isDisabled={currentPage === 1}
-            variant="outline"
-          >
-            Previous
-          </Button>
-          
-          <HStack spacing={2}>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                variant={currentPage === page ? 'solid' : 'outline'}
-                colorScheme={currentPage === page ? 'brand' : 'gray'}
-              >
-                {page}
-              </Button>
-            ))}
-          </HStack>
-          
-          <Button
-            rightIcon={<ChevronRight size={20} />}
-            onClick={() => handlePageChange(currentPage + 1)}
-            isDisabled={currentPage === totalPages}
-            variant="outline"
-          >
-            Next
-          </Button>
-        </Flex>
-      )}
-    </Box>
-  );
+    );
 };
 
 export default NFTMarketplacePage;

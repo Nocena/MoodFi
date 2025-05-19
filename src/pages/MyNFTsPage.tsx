@@ -39,7 +39,7 @@ import {useAccount, useSwitchChain} from "wagmi";
 import {lensTestnet} from "wagmi/chains";
 
 const MyNFTsPage: React.FC = () => {
-    const { chainId} = useAccount()
+    const { chainId, address: walletAddress} = useAccount()
     const { switchChain } = useSwitchChain()
     const {isAuthenticated, currentAccount, client} = useLensAuth();
     const {
@@ -51,6 +51,8 @@ const MyNFTsPage: React.FC = () => {
     const {
         refreshTokenBalance
     } = useUserTokenBalance()
+
+    console.log("allNFTs", allNFTs)
 
     const [selectedNFT, setSelectedNFT] = useState<MoodNFT | null>(null);
     const [selectedPost, setSelectedPost] = useState<MoodPostType | null>(null);
@@ -81,9 +83,9 @@ const MyNFTsPage: React.FC = () => {
             const mapUsedPosts: Record<string, boolean> = {}
             allNFTs.forEach(NFT => mapUsedPosts[NFT.postId] = true)
             setMintablePosts(candidatePosts.filter(post => !mapUsedPosts[post.id]))
-            setAccountNFTs(allNFTs.filter(NFT => NFT.accountAddress === currentAccount.accountAddress))
+            setAccountNFTs(allNFTs.filter(NFT => NFT.owner === walletAddress))
         }
-    }, [currentAccount, allNFTs, candidatePosts]);
+    }, [currentAccount, allNFTs, candidatePosts, walletAddress]);
 
     const handleOpenChangePriceModal = (nft: MoodNFT) => {
         setSelectedNFT(nft);
@@ -108,7 +110,7 @@ const MyNFTsPage: React.FC = () => {
             setIsLoading(true)
             const priceInWei = ethers.parseEther(listingPrice);
             await updateNFTPrice(selectedNFT.tokenId, priceInWei);
-            refreshTokenBalance(currentAccount.accountAddress)
+            refreshTokenBalance(walletAddress!)
             toast({
                 title: 'Success!',
                 description: 'NFT price has been updated',
@@ -151,7 +153,7 @@ const MyNFTsPage: React.FC = () => {
                 imageUri: selectedPost.imageUrl,
                 price: listingPrice,
             });
-            refreshTokenBalance(currentAccount.accountAddress)
+            refreshTokenBalance(walletAddress!)
             toast({
                 title: 'Success!',
                 description: 'Your mood has been minted as an NFT',
@@ -159,12 +161,10 @@ const MyNFTsPage: React.FC = () => {
                 duration: 5000,
                 isClosable: true,
             });
-
+            setMintablePosts(posts => posts.filter(post => post.id !== selectedPost.id))
             setIsModalOpen(false)
             setSelectedPost(null);
             setListingPrice('');
-
-            setMintablePosts(posts => posts.filter(post => post.id !== selectedPost.id))
         } catch (error) {
             console.log("error", error)
             toast({

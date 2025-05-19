@@ -19,8 +19,8 @@ import {
     VStack,
 } from '@chakra-ui/react';
 import {UserPlus, Users} from 'lucide-react';
-import {useLensAuth} from "../providers/LensAuthProvider.tsx";
-import {fetchAccountByUserName, getAccountFollowers, getAccountFollowings} from "../utils/lens.utils.ts";
+import {useLensAuth} from "../providers/LensAuthProvider";
+import {fetchAccountByUserName, getAccountFollowers, getAccountFollowings} from "../utils/lens.utils";
 import {AccountType} from "../types";
 import {follow, unfollow} from "@lens-protocol/client/actions";
 

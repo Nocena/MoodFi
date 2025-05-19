@@ -2,7 +2,7 @@ import React from 'react';
 import {Navigate} from 'react-router-dom';
 import {Box, Container, Heading, Text,} from '@chakra-ui/react';
 import CameraComponent from '../components/camera/CameraComponent';
-import {useLensAuth} from "../providers/LensAuthProvider.tsx";
+import {useLensAuth} from "../providers/LensAuthProvider";
 
 const CameraPage: React.FC = () => {
   const { isAuthenticated } = useLensAuth();

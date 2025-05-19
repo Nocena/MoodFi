@@ -1,4 +1,3 @@
-import { ThirdwebProvider } from "thirdweb/react";
 import {WagmiProvider, createConfig, http} from "wagmi";
 import {lensTestnet, mainnet} from "wagmi/chains";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
@@ -27,19 +26,17 @@ export const walletConfig = createConfig(
 const queryClient = new QueryClient();
 export const WalletProvider = ({children}: { children: React.ReactNode }) => {
     return (
-        <ThirdwebProvider>
-            <WagmiProvider config={walletConfig}>
-                <QueryClientProvider client={queryClient}>
-                    <ConnectKitProvider
-                        customTheme={{
-                            "--ck-connectbutton-color": "white",
-                            "--ck-connectbutton-background": "#3182ce",
-                            "--ck-connectbutton-hover-background": "#4399ed",
-                            "--ck-connectbutton-active-background": "#4399ed",
-                        }}
-                    >{children}</ConnectKitProvider>
-                </QueryClientProvider>
-            </WagmiProvider>
-        </ThirdwebProvider>
+        <WagmiProvider config={walletConfig}>
+            <QueryClientProvider client={queryClient}>
+                <ConnectKitProvider
+                    customTheme={{
+                        "--ck-connectbutton-color": "white",
+                        "--ck-connectbutton-background": "#3182ce",
+                        "--ck-connectbutton-hover-background": "#4399ed",
+                        "--ck-connectbutton-active-background": "#4399ed",
+                    }}
+                >{children}</ConnectKitProvider>
+            </QueryClientProvider>
+        </WagmiProvider>
     );
 };
