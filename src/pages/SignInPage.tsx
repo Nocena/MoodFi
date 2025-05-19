@@ -30,7 +30,7 @@ import {ConnectKitButton} from "connectkit";
 import {useLensAuth} from "../providers/LensAuthProvider";
 import {useAccount} from "wagmi";
 import {AccountType} from "../types";
-import {fetchAvailableLensAccounts} from "../utils/lens.utils.ts";
+import {fetchAvailableLensAccounts} from "../utils/lens.utils";
 
 const features = [
     {

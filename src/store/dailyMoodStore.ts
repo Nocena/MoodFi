@@ -37,6 +37,7 @@ interface MoodState {
     refreshUserPosts: (sessionClient: SessionClient | null, accountAddress: string) => Promise<void>
     refreshRecommendAccounts: (sessionClient: SessionClient | null, accountAddress: string) => Promise<void>
     refreshSimilarAccounts: (sessionClient: SessionClient | null, exceptAccountAddress: string, giveMoodType: MOOD_TYPE | null) => Promise<void>
+    setTodayMoodTaken: (value: boolean) => void
 }
 
 export const useDailyMoodStore = create<MoodState>(        (set) => ({
@@ -122,6 +123,12 @@ export const useDailyMoodStore = create<MoodState>(        (set) => ({
         setTodayMood: (mood: MOOD_TYPE) => {
             set({
                 todayMood: mood,
+            })
+        },
+
+        setTodayMoodTaken: (value: boolean) => {
+            set({
+                todayMoodTaken: value,
             })
         }
     })

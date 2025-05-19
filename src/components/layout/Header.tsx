@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {
   Avatar,
@@ -7,6 +7,7 @@ import {
   Button,
   Flex,
   HStack,
+  Icon,
   IconButton,
   Image,
   Menu,
@@ -14,26 +15,71 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
+  Spinner,
   Stack,
   Text,
+  Tooltip,
   useBreakpointValue,
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
 import {useSocialStore} from '../../store/socialStore';
-import {Bell, Camera, LogOut, Moon, Settings, Sun, User,} from 'lucide-react';
-import {useLensAuth} from "../../providers/LensAuthProvider.tsx";
+import {Bell, Camera, Coins, LogOut, Moon, RefreshCw, Sun, User,} from 'lucide-react';
+import {useLensAuth} from "../../providers/LensAuthProvider";
+import {useUserTokenBalance} from "../../store/useUserTokenBalance";
+import {useAccount} from "wagmi";
 
 const Header: React.FC = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const {disconnect, isAuthenticated, currentAccount} = useLensAuth()
+  const { address: walletAddress } = useAccount()
   const { unreadNotifications } = useSocialStore();
   const navigate = useNavigate();
 
+  const {
+    isRefreshing: isRefreshingBalance,
+    formattedAmount,
+    refreshTokenBalance
+  } = useUserTokenBalance()
   const handleLogout = async () => {
     await disconnect();
     navigate('/login');
   };
+
+  useEffect(() => {
+    if (walletAddress)
+      refreshTokenBalance(walletAddress)
+  }, [refreshTokenBalance, walletAddress])
+
+  const bgColor = useColorModeValue('gray.100', 'gray.700')
+
+
+  const BalanceDisplay = () => (
+      <HStack
+          bg={bgColor}
+          px={3}
+          py={2}
+          borderRadius="lg"
+          spacing={2}
+      >
+        <Icon as={Coins} color="yellow.500" />
+        <Text fontWeight="medium" fontSize={{ base: "sm", md: "md" }} noOfLines={1}>
+          {Number(formattedAmount).toFixed(2)} NOCX
+        </Text>
+        <IconButton
+            aria-label="Refresh balance"
+            icon={isRefreshingBalance ? <Spinner size="sm" /> : <RefreshCw size={16} />}
+            size="xs"
+            variant="ghost"
+            onClick={() => refreshTokenBalance(walletAddress!)}
+            isDisabled={isRefreshingBalance}
+        />
+      </HStack>
+  );
 
   return (
       <Box
@@ -76,6 +122,34 @@ const Header: React.FC = () => {
 
           {isAuthenticated ? (
               <HStack spacing={4}>
+                {/* Desktop Balance Display */}
+                <Box display={{ base: 'none', md: 'block' }}>
+                  <Tooltip label="Your NOCX balance" placement="bottom">
+                    <Box>
+                      <BalanceDisplay />
+                    </Box>
+                  </Tooltip>
+                </Box>
+
+                {/* Mobile Balance Display */}
+                <Box display={{ base: 'block', md: 'none' }}>
+                  <Popover placement="bottom-end">
+                    <PopoverTrigger>
+                      <IconButton
+                          aria-label="Show balance"
+                          icon={<Coins size={20} />}
+                          variant="ghost"
+                          colorScheme="yellow"
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent width="auto">
+                      <PopoverBody>
+                        <BalanceDisplay />
+                      </PopoverBody>
+                    </PopoverContent>
+                  </Popover>
+                </Box>
+
                 <IconButton
                     aria-label="Toggle color mode"
                     icon={colorMode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
@@ -136,13 +210,6 @@ const Header: React.FC = () => {
                         icon={<User size={16} />}
                     >
                       Profile
-                    </MenuItem>
-                    <MenuItem
-                        as={RouterLink}
-                        to="/settings"
-                        icon={<Settings size={16} />}
-                    >
-                      Settings
                     </MenuItem>
                     <MenuDivider />
                     <MenuItem

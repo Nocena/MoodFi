@@ -1,11 +1,11 @@
 // src/components/camera/CameraComponent.tsx
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Box,
     Center,
     FormControl,
     FormLabel,
-    Heading,
+    Heading, Skeleton, SkeletonText,
     Switch,
     Text,
     useColorModeValue,
@@ -36,8 +36,14 @@ const CameraComponent: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Context and store
-    const { client: sessionClient } = useLensAuth();
-    const { dailyMood, todayMoodTaken } = useDailyMoodStore();
+    const {client: sessionClient, currentAccount} = useLensAuth();
+    const {dailyMood, todayMoodTaken, refreshUserPosts, isLoadingUserPosts, setTodayMoodTaken} = useDailyMoodStore();
+
+    useEffect(() => {
+        if (currentAccount) {
+            refreshUserPosts(sessionClient, currentAccount.accountAddress)
+        }
+    }, [sessionClient, currentAccount, refreshUserPosts])
 
     // Custom hooks
     const {
@@ -110,6 +116,12 @@ const CameraComponent: React.FC = () => {
             });
 
             setIsModalOpen(false);
+
+            setTodayMoodTaken(true)
+            // refresh values
+            if (currentAccount) {
+                refreshUserPosts(sessionClient, currentAccount.accountAddress)
+            }
         } catch (error) {
             console.error("Error posting mood:", error);
             toast({
@@ -134,6 +146,23 @@ const CameraComponent: React.FC = () => {
         setVibeCheckResult(null);
         setIsModalOpen(false);
     };
+    const bgWhiteGray = useColorModeValue('white', 'gray.800')
+
+    if (isLoadingUserPosts) {
+        return (
+            <Box
+                borderRadius="lg"
+                overflow="hidden"
+                bg={bgWhiteGray}
+                boxShadow="md"
+            >
+                <Skeleton height="300px"/>
+                <Box p={4}>
+                    <SkeletonText mt="4" noOfLines={2} spacing="4"/>
+                </Box>
+            </Box>
+        )
+    }
 
     // If user already submitted today's mood (only applicable in challenge mode)
     if (todayMoodTaken && !isTrainingMode) {
@@ -192,7 +221,7 @@ const CameraComponent: React.FC = () => {
 
             {/* Main content area - show training mode or regular challenge mode */}
             {isTrainingMode ? (
-                <TrainingMode onClose={() => setIsTrainingMode(false)} />
+                <TrainingMode onClose={() => setIsTrainingMode(false)}/>
             ) : (
                 <>
                     {capturedImage ? (

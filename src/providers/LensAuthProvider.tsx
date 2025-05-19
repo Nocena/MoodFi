@@ -6,7 +6,7 @@ import {APP_ADDRESS, lensPublicClient} from '../constants';
 import {walletConfig} from './WalletProvider';
 import {AccountType, LensAuthContextType} from "../types";
 import {useAccount} from "wagmi";
-import {getLastLoggedInAccount} from "../utils/lens.utils.ts";
+import {getLastLoggedInAccount} from "../utils/lens.utils";
 
 const LensAuthContext = createContext<LensAuthContextType | undefined>(undefined);
 
