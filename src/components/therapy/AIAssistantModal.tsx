@@ -37,11 +37,19 @@ interface Message {
   timestamp: Date;
 }
 
-interface VoiceChatProps {
-  onSpeakingChange: (isSpeaking: boolean) => void;
+interface EmotionData {
+  timestamp: number;
+  dominantEmotion: string;
+  emotionScores: Record<string, number>;
+  confidence: number;
 }
 
-const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
+interface VoiceChatProps {
+  onSpeakingChange: (isSpeaking: boolean) => void;
+  emotionData?: EmotionData[];
+}
+
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange, emotionData = [] }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -49,6 +57,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [inputText, setInputText] = useState('');
+  const [lastEmotionData, setLastEmotionData] = useState<EmotionData[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -56,13 +65,21 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
   const toast = useToast();
 
+  // Update lastEmotionData when emotionData changes
+  useEffect(() => {
+    if (emotionData && emotionData.length > 0) {
+      setLastEmotionData(emotionData);
+    }
+  }, [emotionData]);
+
   // Initialize with welcome message
   useEffect(() => {
     setMessages([
       {
         role: 'system',
         content: `You are a supportive and empathetic AI assistant focused on emotional support. 
-        You help users express their feelings and practice mindfulness. Always suggest seeking professional help if needed.`,
+        You help users express their feelings and practice mindfulness. Always suggest seeking professional help if needed.
+        You will receive emotional data from facial recognition in a JSON format. Use this data to adapt your responses to the user's emotional state.`,
         timestamp: new Date()
       },
       {
@@ -190,6 +207,26 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
     }
   };
 
+  // Create emotion context message based on the latest emotion data
+  const createEmotionContextMessage = (): Message | null => {
+    if (!lastEmotionData || lastEmotionData.length === 0) return null;
+    
+    // Format the emotion data for the AI
+    const formattedEmotions = lastEmotionData.map(data => ({
+      timestamp: new Date(data.timestamp).toISOString(),
+      dominantEmotion: data.dominantEmotion,
+      confidence: data.confidence,
+      emotionScores: data.emotionScores
+    }));
+    
+    // Create a system message with the emotion data
+    return {
+      role: 'system',
+      content: `Current user emotions detected from facial expressions (last 3 seconds): ${JSON.stringify(formattedEmotions)}`,
+      timestamp: new Date()
+    };
+  };
+
   const handleSendMessage = async (userMessage: string) => {
     // Clear input field if sending from text input
     setInputText('');
@@ -204,11 +241,24 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
     setStatusText('Processing...');
 
     try {
+      // Create a message array to send to the AI
+      const messagesToSend = messages.concat(userMsg).map(({ role, content }) => ({ role, content }));
+      
+      // Add emotion context if available
+      const emotionContext = createEmotionContextMessage();
+      if (emotionContext) {
+        messagesToSend.push({ 
+          role: emotionContext.role, 
+          content: emotionContext.content 
+        });
+        
+        // Log the emotion data being sent
+        console.log('Sending emotion data to AI:', emotionContext.content);
+      }
+
       // For demo purposes, you could use the actual chat service
       // or implement a mock response for testing
-      const assistantReply = await chatService.sendMessage(
-        messages.concat(userMsg).map(({ role, content }) => ({ role, content }))
-      );
+      const assistantReply = await chatService.sendMessage(messagesToSend);
 
       const assistantMsg: Message = {
         role: 'assistant',
@@ -260,7 +310,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
 
   const formatTime = (date: Date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // Filter out system messages
+  // Filter out system messages for display
   const displayMessages = messages.filter(msg => msg.role !== 'system');
 
   return (
@@ -352,6 +402,21 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
         </Flex>
       )}
 
+      {/* Current emotion indicator (optional) */}
+      {lastEmotionData.length > 0 && (
+        <Flex justify="center" mb={2}>
+          <Badge
+            colorScheme={getEmotionColor(lastEmotionData[lastEmotionData.length - 1].dominantEmotion)}
+            px={3}
+            py={1}
+            borderRadius="full"
+            fontSize="xs"
+          >
+            {getEmotionEmoji(lastEmotionData[lastEmotionData.length - 1].dominantEmotion)} {formatEmotion(lastEmotionData[lastEmotionData.length - 1].dominantEmotion)}
+          </Badge>
+        </Flex>
+      )}
+
       {/* Input area */}
       <Flex 
         as="form"
@@ -392,17 +457,41 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
           </InputRightElement>
         </InputGroup>
       </Flex>
-
-      {/* Brain icon in bottom right */}
-      <Box
-        position="absolute"
-        bottom="20px"
-        right="20px"
-        color="rgba(138, 110, 255, 0.8)"
-      >
-      </Box>
     </Box>
   );
+};
+
+// Helper functions for emotions
+const getEmotionEmoji = (emotion: string): string => {
+  const emojiMap: Record<string, string> = {
+    neutral: '😐',
+    happy: '😀',
+    sad: '😢',
+    angry: '😡',
+    fearful: '😨',
+    disgusted: '🤢',
+    surprised: '😲'
+  };
+  
+  return emojiMap[emotion.toLowerCase()] || '❓';
+};
+
+const formatEmotion = (emotion: string): string => {
+  return emotion.charAt(0).toUpperCase() + emotion.slice(1).toLowerCase();
+};
+
+const getEmotionColor = (emotion: string): string => {
+  const colorMap: Record<string, string> = {
+    neutral: 'gray',
+    happy: 'yellow',
+    sad: 'blue',
+    angry: 'red',
+    fearful: 'purple',
+    disgusted: 'green',
+    surprised: 'orange'
+  };
+  
+  return colorMap[emotion.toLowerCase()] || 'gray';
 };
 
 export default VoiceChat;

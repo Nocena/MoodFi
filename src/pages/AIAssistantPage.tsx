@@ -18,12 +18,26 @@ import VoiceChat from '../components/therapy/AIAssistantModal';
 import LiveCameraFeed from '../components/therapy/LiveCameraFeed';
 import AIBlob from '../components/therapy/AIBlob';
 
+// Define the emotion data interface
+interface EmotionData {
+  timestamp: number;
+  dominantEmotion: string;
+  emotionScores: Record<string, number>;
+  confidence: number;
+}
+
 const VoiceTherapyPage: React.FC = () => {
   const { isAuthenticated } = useLensAuth();
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [emotionData, setEmotionData] = useState<EmotionData[]>([]);
 
   const isSpeechSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
   const isSpeechSynthesisSupported = 'speechSynthesis' in window;
+
+  // Handle emotion detection updates
+  const handleEmotionDetected = (data: EmotionData[]) => {
+    setEmotionData(data);
+  };
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -138,7 +152,7 @@ const VoiceTherapyPage: React.FC = () => {
           height="140px"
           boxShadow="dark-lg"
         >
-          <LiveCameraFeed />
+          <LiveCameraFeed onEmotionDetected={handleEmotionDetected} />
         </Box>
 
         {/* Circular gradient background */}
@@ -190,7 +204,10 @@ const VoiceTherapyPage: React.FC = () => {
           zIndex={3}
           p={4}
         >
-          <VoiceChat onSpeakingChange={setIsSpeaking} />
+          <VoiceChat 
+            onSpeakingChange={setIsSpeaking} 
+            emotionData={emotionData}
+          />
         </Box>
       </Box>
     </Box>

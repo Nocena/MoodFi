@@ -4,17 +4,29 @@ import { CloseIcon } from '@chakra-ui/icons';
 import { 
   loadFaceApiModels, 
   verifyFace 
-} from '../../utils/faceVerification';
+} from '../../utils/faceVerification'; // Adjust the import path as needed
+
+interface EmotionData {
+  timestamp: number;
+  dominantEmotion: string;
+  emotionScores: Record<string, number>;
+  confidence: number;
+}
 
 interface LiveCameraFeedProps {
   onClose?: () => void;
+  onEmotionDetected?: (emotionData: EmotionData[]) => void;
 }
 
-const LiveCameraFeed: React.FC<LiveCameraFeedProps> = ({ onClose }) => {
+const LiveCameraFeed: React.FC<LiveCameraFeedProps> = ({ onClose, onEmotionDetected }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isActive, setIsActive] = useState(true);
   const [isDetecting, setIsDetecting] = useState(false);
   const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Store recent emotion data (last 3 seconds)
+  const emotionHistoryRef = useRef<EmotionData[]>([]);
+  const MAX_HISTORY_LENGTH = 3; // 3 seconds of data
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -68,11 +80,28 @@ const LiveCameraFeed: React.FC<LiveCameraFeedProps> = ({ onClose }) => {
         const result = await verifyFace(videoRef.current);
         
         if (result.isHuman && result.vibeCheck) {
-          console.log("Emotion detection result:", {
+          // Create emotion data object
+          const emotionData: EmotionData = {
+            timestamp: Date.now(),
             dominantEmotion: result.vibeCheck.dominantEmotion,
-            score: result.vibeCheck.matchScore,
-            allEmotions: result.vibeCheck.detectedEmotions
-          });
+            emotionScores: { ...result.vibeCheck.detectedEmotions },
+            confidence: result.confidence
+          };
+          
+          // Add to history and maintain max length
+          emotionHistoryRef.current.push(emotionData);
+          if (emotionHistoryRef.current.length > MAX_HISTORY_LENGTH) {
+            emotionHistoryRef.current.shift(); // Remove oldest entry
+          }
+          
+          // Log to console
+          console.log("Emotion detected:", emotionData.dominantEmotion, 
+                      "confidence:", emotionData.confidence);
+          
+          // Send emotion data to parent component if callback exists
+          if (onEmotionDetected) {
+            onEmotionDetected([...emotionHistoryRef.current]);
+          }
         } else {
           console.log("No face detected or verification failed:", result.message);
         }
@@ -98,7 +127,7 @@ const LiveCameraFeed: React.FC<LiveCameraFeedProps> = ({ onClose }) => {
       
       setIsDetecting(false);
     };
-  }, [isActive]);
+  }, [isActive, onEmotionDetected]);
 
   const handleClose = () => {
     setIsActive(false);
@@ -142,7 +171,7 @@ const LiveCameraFeed: React.FC<LiveCameraFeedProps> = ({ onClose }) => {
         _hover={{ bg: "rgba(0, 0, 0, 0.8)" }}
       />
       
-      {/* Recording indicator */}
+      {/* Recording indicator - Green when actively detecting emotions */}
       <Box
         position="absolute"
         bottom={2}
