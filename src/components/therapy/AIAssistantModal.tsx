@@ -2,26 +2,33 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Flex,
-  VStack,
-  HStack,
   Text,
-  useColorModeValue,
   IconButton,
-  Spinner,
   Avatar,
   useToast,
   Badge,
-  Tooltip
+  Input,
+  InputGroup,
+  InputRightElement,
+  VStack,
+  HStack
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
-import { CloseIcon, MoonIcon, SunIcon, InfoIcon, SettingsIcon } from '@chakra-ui/icons';
+import { FaMicrophone } from 'react-icons/fa';
+import { BrainIcon } from 'lucide-react';
 import chatService from '../../services/chatService';
 
-// Define the pulse animation using Chakra UI's keyframes
+// Define keyframes for animations
 const pulseAnimation = keyframes`
-  0% { transform: scale(0.8); opacity: 0.5; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.8); opacity: 0.5; }
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+`;
+
+const glowAnimation = keyframes`
+  0% { box-shadow: 0 0 15px 2px rgba(138, 110, 255, 0.6); }
+  50% { box-shadow: 0 0 25px 5px rgba(138, 110, 255, 0.8); }
+  100% { box-shadow: 0 0 15px 2px rgba(138, 110, 255, 0.6); }
 `;
 
 interface Message {
@@ -30,501 +37,268 @@ interface Message {
   timestamp: Date;
 }
 
-const VoiceChat: React.FC = () => {
+interface VoiceChatProps {
+  onSpeakingChange: (isSpeaking: boolean) => void;
+}
+
+const VoiceChat: React.FC<VoiceChatProps> = ({ onSpeakingChange }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [statusText, setStatusText] = useState('Click the microphone to start speaking');
-  
-  // References
+  const [statusText, setStatusText] = useState('');
+  const [inputText, setInputText] = useState('');
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
   const toast = useToast();
-  
-  // Theme colors
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const userBubbleColor = useColorModeValue('blue.500', 'blue.400');
-  const aiBubbleColor = useColorModeValue('gray.100', 'gray.700');
-  const statusBgColor = useColorModeValue('blue.50', 'gray.700');
 
-  // Initialize with system message (hidden from UI)
+  // Initialize with welcome message
   useEffect(() => {
-    const systemMessage: Message = {
-      role: 'system',
-      content: `You are a supportive and empathetic AI assistant focused on providing emotional support. 
-      Your goal is to help users express their feelings, practice mindfulness, and develop healthy coping strategies. 
-      You are not a replacement for professional therapy, but you can offer comfort and general guidance. 
-      Always encourage seeking professional help for serious mental health concerns. Keep responses concise and suitable for voice reading.`,
-      timestamp: new Date()
-    };
-    
-    setMessages([systemMessage]);
-    
-    // Initialize speech recognition with restart capability
-    const initSpeechRecognition = () => {
-      // Clean up any existing recognition instance
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          console.log('Recognition was not running');
-        }
-        recognitionRef.current = null;
+    setMessages([
+      {
+        role: 'system',
+        content: `You are a supportive and empathetic AI assistant focused on emotional support. 
+        You help users express their feelings and practice mindfulness. Always suggest seeking professional help if needed.`,
+        timestamp: new Date()
+      },
+      {
+        role: 'assistant',
+        content: 'Hello 👋 I am Elwa. Before we start, tell me your name.',
+        timestamp: new Date()
       }
-      
-      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false; // Changed to false to avoid buffering issues
-        recognitionRef.current.interimResults = false;
-        recognitionRef.current.lang = 'en-US';
-        
-        recognitionRef.current.onstart = () => {
-          console.log('Speech recognition started');
-          setIsListening(true);
-          setStatusText("Listening...");
-        };
-        
-        recognitionRef.current.onend = () => {
-          console.log('Speech recognition ended');
-          setIsListening(false);
-          setStatusText("Click the microphone to start speaking");
-          
-          // If we're not deliberately stopping, restart after a short delay
-          // This creates a more continuous experience while avoiding buffering issues
-          if (isListening && !isSpeaking) {
-            setTimeout(() => {
-              try {
-                if (recognitionRef.current) {
-                  recognitionRef.current.start();
-                }
-              } catch (e) {
-                console.error('Could not restart speech recognition', e);
-                initSpeechRecognition(); // Reinitialize if restart fails
-              }
-            }, 300);
-          }
-        };
-        
-        recognitionRef.current.onresult = (event: any) => {
-          const transcript = event.results[event.results.length - 1][0].transcript;
-          console.log('Recognized text:', transcript);
-          if (transcript.trim()) {
-            handleSendMessage(transcript);
-          }
-        };
-        
-        recognitionRef.current.onerror = (event: any) => {
-          console.error('Speech recognition error', event.error);
-          setIsListening(false);
-          
-          // Different handling based on error type
-          if (event.error === 'network') {
-            setStatusText("Network error. Check your connection.");
-            toast({
-              title: "Network Error",
-              description: "There was a problem connecting to the speech recognition service. Check your internet connection.",
-              status: "error",
-              duration: 5000,
-              isClosable: true,
-            });
-          } else if (event.error === 'not-allowed') {
-            setStatusText("Microphone access denied");
-            toast({
-              title: "Microphone Access Denied",
-              description: "Please allow microphone access to use voice chat.",
-              status: "error",
-              duration: 5000,
-              isClosable: true,
-            });
-          } else if (event.error === 'aborted') {
-            // Aborted errors are usually just from stopping manually, so don't show a toast
-            setStatusText("Recognition stopped");
-          } else {
-            setStatusText("Error: " + event.error);
-            toast({
-              title: "Speech Recognition Error",
-              description: `Error: ${event.error}. Please try again.`,
-              status: "error",
-              duration: 5000,
-              isClosable: true,
-            });
-            
-            // Try to reinitialize after an error
-            setTimeout(initSpeechRecognition, 1000);
-          }
-        };
-      } else {
-        setStatusText("Speech recognition not supported in this browser");
-        toast({
-          title: "Feature Not Supported",
-          description: "Your browser doesn't support speech recognition. Try using Chrome or Edge.",
-          status: "warning",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
-    
-    // Initialize speech recognition
-    initSpeechRecognition();
-    
-    // Initialize speech synthesis
+    ]);
+
     if ('speechSynthesis' in window) {
-      speechSynthesisRef.current = new SpeechSynthesisUtterance();
-      speechSynthesisRef.current.rate = 1.0;
-      speechSynthesisRef.current.pitch = 1.0;
-      speechSynthesisRef.current.volume = 1.0;
-      
-      speechSynthesisRef.current.onstart = () => {
+      const synth = new SpeechSynthesisUtterance();
+      synth.rate = 1.0;
+      synth.pitch = 1.0;
+      synth.volume = 1.0;
+
+      synth.onstart = () => {
         setIsSpeaking(true);
+        onSpeakingChange(true);
       };
-      
-      speechSynthesisRef.current.onend = () => {
+      synth.onend = () => {
         setIsSpeaking(false);
+        onSpeakingChange(false);
       };
-      
-      speechSynthesisRef.current.onerror = (event) => {
-        console.error('Speech synthesis error', event);
+      synth.onerror = () => {
         setIsSpeaking(false);
+        onSpeakingChange(false);
       };
-      
-      // Get available voices and set a good one
+
       const setVoice = () => {
         const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          // Try to find a natural-sounding female voice
-          const preferredVoices = voices.filter(voice => 
-            (voice.name.includes('Samantha') || 
-             voice.name.includes('Female') ||
-             voice.name.includes('Google UK English Female') ||
-             voice.name.includes('Microsoft Zira'))
-          );
-          
-          if (preferredVoices.length > 0) {
-            speechSynthesisRef.current!.voice = preferredVoices[0];
-          } else {
-            // Fallback to first available voice
-            speechSynthesisRef.current!.voice = voices[0];
-          }
+        const preferred = voices.find(v =>
+          v.name.includes('Samantha') ||
+          v.name.includes('Google') ||
+          v.name.includes('Zira')
+        );
+        synth.voice = preferred || voices[0];
+      };
+
+      setTimeout(setVoice, 100);
+      window.speechSynthesis.onvoiceschanged = setVoice;
+      speechSynthesisRef.current = synth;
+    }
+  }, []);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const startRecording = async () => {
+    setStatusText('Listening...');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
         }
       };
-      
-      // Chrome needs a delay for voices to load
-      setTimeout(setVoice, 100);
-      
-      // For browsers that support the voiceschanged event
-      window.speechSynthesis.onvoiceschanged = setVoice;
-    } else {
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await transcribeAndSend(audioBlob);
+      };
+
+      mediaRecorder.start();
+      mediaRecorderRef.current = mediaRecorder;
+      setIsListening(true);
+    } catch (err) {
+      console.error(err);
+      setStatusText('');
       toast({
-        title: "Feature Not Supported",
-        description: "Your browser doesn't support speech synthesis. Try using Chrome or Edge.",
-        status: "warning",
+        title: "Microphone Error",
+        description: "Please allow microphone access and try again.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
     }
-    
-    // Clean up on component unmount
-    return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          console.log('Recognition was not running on cleanup');
-        }
-      }
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, [toast]);
-
-  // Scroll to bottom whenever messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const toggleListening = () => {
-    if (!recognitionRef.current) return;
-    
-    if (isListening) {
-      try {
-        recognitionRef.current.stop();
-        setIsListening(false);
-        setStatusText("Recognition stopped");
-      } catch (error) {
-        console.error('Error stopping speech recognition', error);
-        
-        // If stopping fails, try to recreate the recognition object
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          recognitionRef.current = new SpeechRecognition();
-          recognitionRef.current.continuous = false;
-          recognitionRef.current.interimResults = false;
-          recognitionRef.current.lang = 'en-US';
-          setIsListening(false);
-        }
-      }
-    } else {
-      try {
-        // In case it was already running somehow
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          // Ignore stop errors
-        }
-        
-        // Small delay to ensure previous instance is fully stopped
-        setTimeout(() => {
-          try {
-            recognitionRef.current?.start();
-            console.log('Started speech recognition');
-          } catch (startError) {
-            console.error('Failed to start speech recognition', startError);
-            
-            // If start fails, show error and try to reinitialize
-            toast({
-              title: "Recognition Error",
-              description: "Failed to start speech recognition. Trying again...",
-              status: "error",
-              duration: 3000,
-              isClosable: true,
-            });
-            
-            // Recreate speech recognition object
-            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-              const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-              recognitionRef.current = new SpeechRecognition();
-              recognitionRef.current.continuous = false;
-              recognitionRef.current.interimResults = false;
-              recognitionRef.current.lang = 'en-US';
-              
-              // Try one more time after recreating
-              setTimeout(() => {
-                try {
-                  recognitionRef.current?.start();
-                } catch (e) {
-                  console.error('Still failed to start recognition after reinitializing', e);
-                  setStatusText("Speech recognition failed. Please try reloading the page.");
-                }
-              }, 500);
-            }
-          }
-        }, 100);
-      } catch (error) {
-        console.error('Error starting speech recognition', error);
-        toast({
-          title: "Recognition Error",
-          description: "Could not start speech recognition. Please check microphone permissions and try again.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+      setStatusText('Processing...');
     }
   };
 
-  const toggleAudio = () => {
-    setAudioEnabled(!audioEnabled);
+  const transcribeAndSend = async (audioBlob: Blob) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'audio.webm');
+      formData.append('model', 'whisper-1');
+
+      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('📝 Transcript:', data.text);
+        handleSendMessage(data.text);
+      } else {
+        console.error('Transcription API error:', data);
+        throw new Error(data.error?.message || 'Transcription failed');
+      }
+    } catch (err) {
+      console.error('Transcription failed:', err);
+      setStatusText('');
+      toast({
+        title: 'Transcription Error',
+        description: 'Could not transcribe audio. Try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleSendMessage = async (userMessage: string) => {
+    // Clear input field if sending from text input
+    setInputText('');
     
-    if (isSpeaking && !audioEnabled) {
-      window.speechSynthesis.cancel();
+    const userMsg: Message = {
+      role: 'user',
+      content: userMessage,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setIsLoading(true);
+    setStatusText('Processing...');
+
+    try {
+      // For demo purposes, you could use the actual chat service
+      // or implement a mock response for testing
+      const assistantReply = await chatService.sendMessage(
+        messages.concat(userMsg).map(({ role, content }) => ({ role, content }))
+      );
+
+      const assistantMsg: Message = {
+        role: 'assistant',
+        content: assistantReply,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMsg]);
+      speakText(assistantReply);
+    } catch (err) {
+      console.error('Error sending message', err);
+      const fallbackMsg = 'Sorry, I encountered an error. Please try again.';
+
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: fallbackMsg,
+        timestamp: new Date()
+      }]);
+
+      speakText(fallbackMsg);
+      toast({
+        title: "Error",
+        description: "Could not get a response from the AI.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+      setStatusText('');
     }
   };
 
   const speakText = (text: string) => {
     if (!audioEnabled || !speechSynthesisRef.current) return;
-    
-    // Cancel any ongoing speech
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
     }
-    
     speechSynthesisRef.current.text = text;
     window.speechSynthesis.speak(speechSynthesisRef.current);
   };
 
-  const handleSendMessage = async (userMessage: string) => {
-    // Add user message to chat
-    const userMessageObj: Message = {
-      role: 'user',
-      content: userMessage,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, userMessageObj]);
-    setIsLoading(true);
-    
-    try {
-      // Call backend API via service
-      const assistantResponse = await chatService.sendMessage(
-        messages.concat(userMessageObj).map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }))
-      );
-      
-      // Add AI response to chat
-      const assistantMessageObj: Message = {
-        role: 'assistant',
-        content: assistantResponse,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, assistantMessageObj]);
-      
-      // Speak the response
-      speakText(assistantResponse);
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      
-      // Show error toast
-      toast({
-        title: "Error",
-        description: "Couldn't get a response from the AI. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      
-      // Add error message to chat
-      const errorMessage: Message = {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-      
-      // Speak the error message
-      speakText(errorMessage.content);
-    } finally {
-      setIsLoading(false);
+  const handleInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputText.trim()) {
+      handleSendMessage(inputText.trim());
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const formatTime = (date: Date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // Filter out system messages for display
+  // Filter out system messages
   const displayMessages = messages.filter(msg => msg.role !== 'system');
 
   return (
-    <Box
-      borderWidth="1px"
-      borderRadius="lg"
-      borderColor={borderColor}
-      bg={bgColor}
-      h="70vh"
-      boxShadow="md"
-      overflow="hidden"
-      display="flex"
-      flexDirection="column"
-    >
-      {/* Status bar */}
-      <Flex 
-        p={3} 
-        bg={statusBgColor} 
-        justifyContent="center" 
-        alignItems="center"
-        borderBottomWidth="1px"
-        borderColor={borderColor}
-      >
-        {isListening ? (
-          <Badge colorScheme="green" px={2} py={1} borderRadius="full" display="flex" alignItems="center">
-            <Box 
-              as="span" 
-              w={2} 
-              h={2} 
-              bg="green.500" 
-              borderRadius="full" 
-              mr={2} 
-              animation={`${pulseAnimation} 1.5s infinite`}
-            />
-            Listening...
-          </Badge>
-        ) : isSpeaking ? (
-          <Badge colorScheme="blue" px={2} py={1} borderRadius="full" display="flex" alignItems="center">
-            <Box 
-              as="span" 
-              w={2} 
-              h={2} 
-              bg="blue.500" 
-              borderRadius="full" 
-              mr={2} 
-              animation={`${pulseAnimation} 1.5s infinite`}
-            />
-            Speaking...
-          </Badge>
-        ) : (
-          <Text fontSize="sm" color="gray.600">
-            {statusText}
-          </Text>
-        )}
-      </Flex>
-      
-      {/* Messages area */}
-      <Box 
-        flex="1" 
-        overflowY="auto" 
-        p={4}
-        css={{
-          '&::-webkit-scrollbar': {
-            width: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            width: '10px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: useColorModeValue('gray.200', 'gray.600'),
-            borderRadius: '24px',
-          },
-        }}
-      >
-        {displayMessages.length === 0 ? (
-          <Flex 
-            height="100%" 
-            alignItems="center" 
-            justifyContent="center"
-            flexDirection="column"
-            opacity={0.7}
-          >
-            <Text fontSize="lg" fontWeight="medium" mb={2}>
-              Voice Chat with MoodFi Assistant
-            </Text>
-            <Text fontSize="sm" maxW="md" textAlign="center">
-              Click the microphone icon below to start speaking. Your conversation will appear here.
-            </Text>
-          </Flex>
-        ) : (
+    <Box>
+      {/* Messages container */}
+      {displayMessages.length > 0 && (
+        <Box
+          maxH="200px"
+          overflowY="auto"
+          mb={4}
+          borderRadius="xl"
+          bg="rgba(20, 20, 35, 0.6)"
+          backdropFilter="blur(10px)"
+          p={4}
+        >
           <VStack spacing={4} align="stretch">
-            {displayMessages.map((msg, index) => (
-              <Box 
-                key={index} 
-                alignSelf={msg.role === 'user' ? 'flex-end' : 'flex-start'}
-                maxW="80%"
-              >
+            {displayMessages.map((msg, idx) => (
+              <Box key={idx} alignSelf={msg.role === 'user' ? 'flex-end' : 'flex-start'} maxW="80%">
                 <HStack spacing={2} align="flex-start">
                   {msg.role === 'assistant' && (
-                    <Avatar size="sm" name="AI Assistant" bg="teal.500" />
+                    <Avatar 
+                      size="sm" 
+                      name="AI Assistant" 
+                      bg="purple.600"
+                      color="white"
+                      fontWeight="bold"
+                    >
+                      AA
+                    </Avatar>
                   )}
                   <Box>
                     <Box
-                      bg={msg.role === 'user' ? userBubbleColor : aiBubbleColor}
-                      color={msg.role === 'user' ? 'white' : 'inherit'}
-                      borderRadius="lg"
+                      bg={msg.role === 'user' ? 'blue.600' : 'gray.800'}
+                      color="white"
+                      borderRadius="xl"
                       px={4}
                       py={2}
+                      boxShadow={msg.role === 'assistant' ? '0 0 5px rgba(138, 110, 255, 0.3)' : undefined}
                     >
                       <Text>{msg.content}</Text>
                     </Box>
@@ -533,61 +307,104 @@ const VoiceChat: React.FC = () => {
                     </Text>
                   </Box>
                   {msg.role === 'user' && (
-                    <Avatar size="sm" name="User" />
+                    <Avatar 
+                      size="sm" 
+                      name="User"
+                      bg="blue.600"
+                      color="white"
+                      fontWeight="bold"
+                    >
+                      U
+                    </Avatar>
                   )}
                 </HStack>
               </Box>
             ))}
             <div ref={messagesEndRef} />
           </VStack>
-        )}
-      </Box>
+        </Box>
+      )}
 
-      {/* Control bar */}
-      <Flex 
-        p={4} 
-        borderTopWidth="1px"
-        borderColor={borderColor}
-        justifyContent="center"
-        alignItems="center"
-        gap={4}
-      >
-        <Tooltip label={audioEnabled ? "Mute" : "Unmute"}>
-          <IconButton
-            aria-label={audioEnabled ? "Mute" : "Unmute"}
-            icon={audioEnabled ? <InfoIcon /> : <InfoIcon />}
-            onClick={toggleAudio}
-            colorScheme={audioEnabled ? "blue" : "gray"}
-            size="lg"
-            isRound
-          />
-        </Tooltip>
-        
-        <Tooltip label={isListening ? "Stop Listening" : "Start Listening"}>
-          <IconButton
-            aria-label={isListening ? "Stop Listening" : "Start Listening"}
-            icon={isLoading ? <Spinner /> : isListening ? <MoonIcon /> : <SunIcon />}
-            onClick={toggleListening}
-            colorScheme={isListening ? "red" : "green"}
-            size="lg"
-            isRound
-            isDisabled={isLoading || isSpeaking}
-          />
-        </Tooltip>
-        
-        {isSpeaking && (
-          <Tooltip label="Stop Speaking">
-            <IconButton
-              aria-label="Stop Speaking"
-              icon={<CloseIcon />}
-              onClick={() => window.speechSynthesis.cancel()}
-              colorScheme="red"
-              size="lg"
-              isRound
+      {/* Status indicator */}
+      {(isListening || isSpeaking || isLoading) && (
+        <Flex justify="center" py={2}>
+          <Badge 
+            colorScheme={isListening ? "purple" : "blue"} 
+            px={3} 
+            py={1} 
+            borderRadius="full" 
+            display="flex" 
+            alignItems="center"
+          >
+            <Box 
+              as="span" 
+              w={2} 
+              h={2} 
+              bg={isListening ? "purple.400" : "blue.400"} 
+              borderRadius="full" 
+              mr={2} 
+              sx={{
+                animation: `${pulseAnimation} 1.5s infinite`
+              }}
             />
-          </Tooltip>
-        )}
+            {statusText || (isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Processing...")}
+          </Badge>
+        </Flex>
+      )}
+
+      {/* Input area */}
+      <Flex 
+        as="form"
+        onSubmit={handleInputSubmit}
+      >
+        <InputGroup size="lg">
+          <Input
+            placeholder="You can type here"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            bg="rgba(20, 20, 35, 0.6)"
+            color="white"
+            borderRadius="full"
+            border="none"
+            _placeholder={{ color: "gray.500" }}
+            pr="4.5rem"
+            h="60px"
+            fontSize="md"
+            disabled={isListening || isSpeaking || isLoading}
+            backdropFilter="blur(10px)"
+          />
+          <InputRightElement width="4.5rem" h="60px">
+            <IconButton
+              h="45px"
+              w="45px"
+              borderRadius="full"
+              aria-label="Voice control"
+              icon={<FaMicrophone />}
+              colorScheme={isListening ? "red" : "purple"}
+              onClick={isListening ? stopRecording : startRecording}
+              isDisabled={isSpeaking || isLoading}
+              bg={isListening ? "red.500" : "purple.500"}
+              _hover={{ bg: isListening ? "red.600" : "purple.600" }}
+              sx={{
+                animation: isListening ? `${glowAnimation} 2s infinite` : undefined
+              }}
+            />
+          </InputRightElement>
+        </InputGroup>
       </Flex>
+
+      {/* Brain icon in bottom right */}
+      <Box
+        position="absolute"
+        bottom="20px"
+        right="20px"
+        color="rgba(138, 110, 255, 0.8)"
+      >
+        {/* Use any brain icon you have available */}
+        <Box as="span" fontSize="2xl">
+          🧠
+        </Box>
+      </Box>
     </Box>
   );
 };
