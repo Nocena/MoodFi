@@ -1,0 +1,43 @@
+@keyframes pulse {
+    0% {
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    100% {
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
+  }
+  
+  .pulse-animation {
+    animation: pulse 1.5s infinite;
+  }
+  
+  /* Add custom styles for voice chat here */
+  .status-badge {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+  }
+  
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  .listening-indicator {
+    background-color: #48BB78;
+    animation: pulse 1.5s infinite;
+  }
+  
+  .speaking-indicator {
+    background-color: #4299E1;
+    animation: pulse 1.5s infinite;
+  }

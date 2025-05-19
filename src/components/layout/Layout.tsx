@@ -4,6 +4,7 @@ import { Box, useColorModeValue } from '@chakra-ui/react';
 import Header from './Header';
 import Navigation from './Navigation';
 import MobileNavigation from './MobileNavigation';
+import AIFloatingButton from './AIFloatingButton';
 
 const Layout: React.FC = () => {
   const bgColor = useColorModeValue('gray.50', 'gray.900');
@@ -51,6 +52,9 @@ const Layout: React.FC = () => {
       >
         <MobileNavigation />
       </Box>
+      
+      {/* Just add the AI Floating Button */}
+      <AIFloatingButton />
     </Box>
   );
 };

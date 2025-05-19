@@ -17,6 +17,7 @@ import {WalletProvider} from "./providers/WalletProvider";
 import {LensAuthProvider} from "./providers/LensAuthProvider";
 import SignUpPage from "./pages/SignUpPage";
 import PostPage from './pages/PostPage';
+import AIAssistantPage from './pages/AIAssistantPage'; // Import the AI Assistant page
 
 function App() {
     return (
@@ -38,6 +39,7 @@ function App() {
                                 <Route path="nft/marketplace" element={<NFTMarketplacePage/>}/>
                                 <Route path="nft/my-nfts" element={<MyNFTsPage/>}/>
                                 <Route path="post/:postId" element={<PostPage />} />
+                                <Route path="ai-assistant" element={<AIAssistantPage />} /> {/* Add the AI Assistant route */}
                             </Route>
                             <Route path="*" element={<Navigate to="/" replace/>}/>
                         </Routes>

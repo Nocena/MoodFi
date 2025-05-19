@@ -177,4 +177,17 @@ export type AuthorWithMood = AccountType & {
   latestTimestamp: string;   // ISO string from latest post
 };
 
+export {}
+
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any
+    SpeechRecognition: any
+  }
+
+  type SpeechRecognition = any
+  type SpeechRecognitionEvent = any
+}
+
+
 export const LOCAL_STORAGE_LAST_MOOD_TAKEN_TIME = 'last-mood-time'
