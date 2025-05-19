@@ -134,7 +134,7 @@ const MoodCard: React.FC<MoodCardProps> = ({user, moodEntry}) => {
                         src={moodEntry.imageUrl}
                         alt={`${user.displayName}'s mood`}
                         w="full"
-                        objectFit="cover"
+                        objectFit="contain"
                         h="auto"
                         maxH="500px"
                     />

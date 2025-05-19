@@ -505,3 +505,26 @@ export const getSimilarMoodAccounts = async (sessionClient: SessionClient | null
         return [];
     }
 }
+
+export async function getNOCXReward(amount: number | string, walletAddress: string) {
+    try {
+        const response = await fetch('https://nocx-backend.onrender.com/transfer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ amount, walletAddress }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Transfer failed');
+        }
+
+        return data; // { success: true, txHash: "0x..." }
+    } catch (error) {
+        console.error('Transfer error:', error);
+        throw error;
+    }
+}

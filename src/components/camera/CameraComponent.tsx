@@ -22,10 +22,12 @@ import TrainingMode from './training/TrainingMode';
 
 // Import hooks
 import {useMoodAnalysis} from './hooks/useMoodAnalysis';
-import {postDailyMood} from "../../utils/lens.utils";
+import {getNOCXReward, postDailyMood} from "../../utils/lens.utils";
 import {useDailyMoodStore} from "../../store/dailyMoodStore";
+import {useAccount} from "wagmi";
 
 const CameraComponent: React.FC = () => {
+    const { address: walletAddress } = useAccount()
     // State
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -92,7 +94,7 @@ const CameraComponent: React.FC = () => {
 
     // Handle form submission
     const handleSubmit = async () => {
-        if (!detectedMood || !capturedImage || !imageFile || !sessionClient) return;
+        if (!detectedMood || !capturedImage || !imageFile || !sessionClient || !walletAddress) return;
         setIsSubmitting(true)
         try {
             const postResult = await postDailyMood(
@@ -107,6 +109,7 @@ const CameraComponent: React.FC = () => {
             if (!postResult)
                 throw new Error('Failed to post mood');
 
+            await getNOCXReward(rewardAmount, walletAddress)
             toast({
                 title: "Success!",
                 description: `Mood posted and ${rewardAmount.toFixed(1)} $NOCX tokens earned!`,

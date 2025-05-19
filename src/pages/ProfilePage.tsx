@@ -95,7 +95,6 @@ const ProfilePage: React.FC = () => {
                     isFollowedByMe: selectedAccount?.isFollowedByMe ?? false,
                 })
 
-
                 const posts = await getAccountPosts(client, selectedAccount.accountAddress)
                 setAccountPosts(posts)
                 setIsHistoryLoading(false)
