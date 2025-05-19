@@ -1,7 +1,10 @@
 // src/components/camera/MoodAnalysisModal.tsx
 import React from 'react';
 import {
+    Badge,
+    Box,
     Button,
+    Flex,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -9,16 +12,13 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-    Textarea,
     Text,
-    VStack,
-    Box,
-    Badge,
-    HStack,
-    Flex
+    Textarea,
+    VStack
 } from '@chakra-ui/react';
-import { MOOD_TYPE } from '../../types';
+import {MOOD_TYPE} from '../../types';
 import ResultsSummary from './ResultsSummary';
+import {getMoodEmoji} from "../../utils/common.utils";
 
 interface VibeCheckResultType {
     requestedEmotion?: string;
@@ -59,19 +59,6 @@ const MoodAnalysisModal: React.FC<MoodAnalysisModalProps> = ({
     isSubmitting,
     isTrainingMode = false
 }) => {
-    // Helper functions for emoji and formatting
-    const getMoodEmoji = (mood: string) => {
-        const moods: Record<string, string> = {
-            'sad': '😢',
-            'happy': '😊',
-            'angry': '😠',
-            'surprised': '😲',
-            'neutral': '😐',
-            'disgusted': '🤢',
-            'fearful': '😨'
-        };
-        return moods[mood.toLowerCase()] || '❓';
-    };
 
     const formatEmotion = (emotion: string) => {
         return emotion.charAt(0).toUpperCase() + emotion.slice(1).toLowerCase();
@@ -104,7 +91,7 @@ const MoodAnalysisModal: React.FC<MoodAnalysisModalProps> = ({
                                 <Flex align="center" justify="center" mb={2}>
                                     <Text fontWeight="medium">Challenge: {formatEmotion(dailyMood.mood.toLowerCase())} {getMoodEmoji(dailyMood.mood.toLowerCase())}</Text>
                                     <Text mx={2}>→</Text>
-                                    <Text fontWeight="medium">You: {formatEmotion(detectedMood.toLowerCase())} {getMoodEmoji(detectedMood.toLowerCase())}</Text>
+                                    <Text fontWeight="medium">You: {formatEmotion(detectedMood.toLowerCase())} {getMoodEmoji(detectedMood)}</Text>
                                 </Flex>
                                 
                                 <Text 

@@ -21,7 +21,7 @@ const ConversationList: React.FC = () => {
     loadConversations,
     isLoading,
   } = useSocialStore();
-  const { user } = useAuthStore();
+  const user = null;
   
   // Move useColorModeValue hooks outside of the map function
   const activeBgColor = useColorModeValue('brand.50', 'rgba(88, 28, 255, 0.15)');

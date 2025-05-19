@@ -1,7 +1,3 @@
-    // Track number of matches and perfect/good matches for UI
-    const [matchCount, setMatchCount] = useState(0);
-    const [perfectMatches, setPerfectMatches] = useState(0);
-    const [goodMatches, setGoodMatches] = useState(0);// src/components/camera/training/TrainingMode.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
@@ -37,11 +33,14 @@ interface TrainingModeProps {
 }
 
 const TrainingMode: React.FC<TrainingModeProps> = ({ onClose }) => {
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    // const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    // const [imageFile, setImageFile] = useState<File | null>(null);
     const [currentEmotion, setCurrentEmotion] = useState<string | null>(null);
     const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
     const [currentDetectedEmotion, setCurrentDetectedEmotion] = useState<string | null>(null);
+    const [matchCount, setMatchCount] = useState(0);
+    const [perfectMatches, setPerfectMatches] = useState(0);
+    const [goodMatches, setGoodMatches] = useState(0);// src/components/camera/training/TrainingMode.tsx
 
     const toast = useToast();
 
@@ -144,10 +143,10 @@ const TrainingMode: React.FC<TrainingModeProps> = ({ onClose }) => {
         }
     }, [isActive, currentEmotion, nextChallenge, toast, pickNextEmotion, matchCount, stopTraining]);
 
-    const handleCapture = async (imageSrc: string, file: File) => {
+    const handleCapture = async (/*imageSrc: string, file: File*/) => {
         if (!isActive || !currentEmotion) return;
-        setCapturedImage(imageSrc);
-        setImageFile(file);
+        // setCapturedImage(imageSrc);
+        // setImageFile(file);
     };
 
     const handleTrainingReset = () => {

@@ -41,7 +41,7 @@ const TrainingController: React.FC<TrainingControllerProps> = ({
                         Ready for Emotion Training?
                     </Text>
                     <Text>
-                        Match 10 emotions in 30 seconds to earn bonus rewards!
+                        Match 10 emotions in 30 seconds to level up your mood streak!
                     </Text>
                     <Button 
                         leftIcon={<Play />} 

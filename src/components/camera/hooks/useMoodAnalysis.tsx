@@ -1,8 +1,7 @@
 // src/components/camera/hooks/useMoodAnalysis.tsx
-import { useState } from 'react';
-import { MOOD_TYPE } from '../../../types';
-import { useMoodStore } from '../../../store/moodStore';
-import { verifyFace } from '../../../utils/faceVerification';
+import {useState} from 'react';
+import {MOOD_TYPE} from '../../../types';
+import {verifyFace} from '../../../utils/faceVerification';
 
 export interface VibeCheckResultType {
     requestedEmotion?: string;
@@ -19,8 +18,6 @@ export const useMoodAnalysis = () => {
     const [vibeCheckResult, setVibeCheckResult] = useState<VibeCheckResultType | null>(null);
     const [rewardAmount, setRewardAmount] = useState<number>(0);
 
-    // Get mood store for fallback detection
-    const { detectMood } = useMoodStore();
 
     // Main mood analysis function
     const analyzeMood = async (imageUrl: string, dailyMood?: string) => {
@@ -90,20 +87,20 @@ export const useMoodAnalysis = () => {
                 console.log("Full result received:", JSON.stringify(verificationResult, null, 2));
                 
                 // If no vibeCheck data, fall back to legacy detection
-                return await handleFallbackDetection(imageUrl, dailyMood);
+                return await handleFallbackDetection(dailyMood);
             }
         } catch (error) {
             console.error("Error using face-api.js for detection:", error);
             // If face-api fails, try the fallback detection
-            return await handleFallbackDetection(imageUrl, dailyMood);
+            return await handleFallbackDetection(dailyMood);
         }
     };
     
     // Fallback to legacy detection mechanism
-    const handleFallbackDetection = async (imageUrl: string, dailyMood?: string): Promise<{success: boolean}> => {
+    const handleFallbackDetection = async (dailyMood?: string): Promise<{success: boolean}> => {
         console.log('Using fallback mood detection');
         try {
-            const detectedEmotion = await detectMood(imageUrl);
+            const detectedEmotion = 'neutral';
             console.log(`Fallback detected emotion: ${detectedEmotion}`);
             setDetectedMood(detectedEmotion);
             

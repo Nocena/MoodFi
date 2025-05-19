@@ -1,17 +1,6 @@
 // src/components/camera/training/TrainingResults.tsx
 import React from 'react';
-import {
-    Box,
-    Button,
-    Text,
-    VStack,
-    HStack,
-    Badge,
-    Divider,
-    useColorModeValue
-} from '@chakra-ui/react';
-import ResultsSummary from '../ResultsSummary';
-import { MOOD_TYPE } from '../../../types';
+import {Badge, Box, Button, Divider, HStack, Text, VStack} from '@chakra-ui/react';
 
 interface TrainingResultsProps {
     correctChallenges: number;
@@ -29,15 +18,13 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
     correctChallenges,
     totalChallenges,
     timeRemaining,
-    score,
-    bonusReward,
     perfectMatchCount,
     goodMatchCount,
     onReset,
     onClose
 }) => {
-    const bgColor = useColorModeValue('white', 'gray.800');
-    const borderColor = useColorModeValue('gray.200', 'gray.700');
+    // const bgColor = useColorModeValue('white', 'gray.800');
+    // const borderColor = useColorModeValue('gray.200', 'gray.700');
     
     // Calculate accuracy percentage
     const accuracy = Math.round((correctChallenges / totalChallenges) * 100);
@@ -53,8 +40,8 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
     const performance = getPerformanceLevel();
     
     // Mock detected mood for ResultsSummary
-    const mockDetectedMood: MOOD_TYPE = "happy";
-    const mockConfidenceScore = 95;
+    // const mockDetectedMood: MOOD_TYPE = "happy";
+    // const mockConfidenceScore = 95;
     
     return (
         <VStack spacing={6} align="stretch">
@@ -68,11 +55,13 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
             </Box>
             
             {/* Result Summary display */}
-            <ResultsSummary 
+{/*
+            <ResultsSummary
                 detectedMood={mockDetectedMood} 
                 confidenceScore={mockConfidenceScore} 
             />
-            
+*/}
+
             <Box 
                 p={4} 
                 borderWidth="1px" 
@@ -108,7 +97,7 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
                 
                 <Box textAlign="center">
                     <Text fontSize="xl" fontWeight="bold" color="purple.500">
-                        Total Reward: {bonusReward} $NOCX
+                        Total Score
                     </Text>
                     <Text fontSize="sm" color="gray.600">
                         {perfectMatchCount} perfect matches, {goodMatchCount} good matches

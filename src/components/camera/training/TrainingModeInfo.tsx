@@ -1,13 +1,7 @@
 // src/components/camera/training/TrainingModeInfo.tsx
 import React from 'react';
-import {
-    Box,
-    Text,
-    HStack,
-    Icon,
-    useColorModeValue
-} from '@chakra-ui/react';
-import { Timer, Award, AlertCircle } from 'lucide-react';
+import {Box, HStack, Icon, Text, useColorModeValue} from '@chakra-ui/react';
+import {AlertCircle, Timer} from 'lucide-react';
 
 const TrainingModeInfo: React.FC = () => {
     const bgColor = useColorModeValue('purple.50', 'purple.900');
@@ -36,10 +30,12 @@ const TrainingModeInfo: React.FC = () => {
                 <Text fontSize="sm">Complete all challenges within 30 seconds</Text>
             </HStack>
             
+{/*
             <HStack spacing={4}>
                 <Icon as={Award} color="purple.500" />
                 <Text fontSize="sm">Succeed to earn bonus $NOCX tokens</Text>
             </HStack>
+*/}
         </Box>
     );
 };

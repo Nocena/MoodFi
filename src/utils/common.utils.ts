@@ -36,6 +36,11 @@ export const dataURLtoFile = async (dataUrl: string, fileName = 'mood.png'): Pro
     return new File([blob], fileName, {type: blob.type});
 };
 
+export const getRandomMood = (): MOOD_TYPE => {
+    const moods: MOOD_TYPE[] = ['happy', 'sad', 'fearful', 'neutral', 'angry', 'disgusted', 'surprised']
+    return moods[Math.floor(Math.random() * moods.length)]
+}
+
 export const getMoodColor = (mood: MOOD_TYPE) => {
     switch (mood) {
         case 'happy':

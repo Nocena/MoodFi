@@ -22,7 +22,7 @@ const ChatWindow: React.FC = () => {
     messages,
     sendMessage,
   } = useSocialStore();
-  const { user } = useAuthStore();
+  const user = null;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const activeMessages = activeConversation ? messages[activeConversation] || [] : [];
