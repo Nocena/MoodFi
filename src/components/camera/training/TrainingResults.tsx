@@ -1,6 +1,6 @@
 // src/components/camera/training/TrainingResults.tsx
 import React from 'react';
-import {Badge, Box, Button, Divider, HStack, Text, VStack} from '@chakra-ui/react';
+import {Badge, Box, Button, Divider, HStack, Text, useColorModeValue, VStack} from '@chakra-ui/react';
 
 interface TrainingResultsProps {
     correctChallenges: number;
@@ -42,7 +42,9 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
     // Mock detected mood for ResultsSummary
     // const mockDetectedMood: MOOD_TYPE = "happy";
     // const mockConfidenceScore = 95;
-    
+
+    const bgColor = useColorModeValue('gray.50', 'gray.700')
+
     return (
         <VStack spacing={6} align="stretch">
             <Box textAlign="center">
@@ -65,29 +67,28 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
             <Box 
                 p={4} 
                 borderWidth="1px" 
-                borderColor="gray.200" 
-                borderRadius="md" 
-                bg="gray.50"
+                borderRadius="md"
+                bg={bgColor}
             >
                 <HStack justify="space-between" mb={3}>
                     <Box>
-                        <Text color="gray.600" fontSize="sm">Challenge</Text>
+                        <Text fontSize="sm">Challenge</Text>
                         <HStack>
                             <Text fontWeight="bold">Accuracy:</Text>
                             <Text>{accuracy}%</Text>
                         </HStack>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm">
                             {correctChallenges} / {totalChallenges} correct
                         </Text>
                     </Box>
                     
                     <Box>
-                        <Text color="gray.600" fontSize="sm">Timing</Text>
+                        <Text fontSize="sm">Timing</Text>
                         <HStack>
                             <Text fontWeight="bold">Time Left:</Text>
                             <Text>{timeRemaining}s</Text>
                         </HStack>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm">
                             +{timeRemaining * 2} bonus points
                         </Text>
                     </Box>
@@ -99,7 +100,7 @@ const TrainingResults: React.FC<TrainingResultsProps> = ({
                     <Text fontSize="xl" fontWeight="bold" color="purple.500">
                         Total Score
                     </Text>
-                    <Text fontSize="sm" color="gray.600">
+                    <Text fontSize="sm" >
                         {perfectMatchCount} perfect matches, {goodMatchCount} good matches
                     </Text>
                 </Box>
