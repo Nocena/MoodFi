@@ -3,12 +3,31 @@
 ## 🌐 Live Demo
 
 Check out the live app here: [https://mood-fi.vercel.app](https://mood-fi.vercel.app)
+YouTube demo video: [https://youtu.be/GiiwhjBkZGk](https://youtu.be/GiiwhjBkZGk)
 
 **MoodFi** is a lightweight SocialFi prototype built for the **Lens Spring Hackathon** by the NOCENA team. It allows users to upload mood-based images, receive AI-powered mood analysis, and **earn rewards in $NOCX**, the native token of the NOCENA ecosystem.
 
 Users can vibe, post, and if their mood content reaches a specific **social score threshold (currently 1 like)**, they can **mint their mood as a Soulbound NFT** – creating a verifiable on-chain memory.
 
 > _"Your mood deserves to be more than just a post – make it a moment on-chain."_ 💫
+
+---
+
+## 🛠 Core problem
+
+We all know it, but modern social media are simply a broken system. We identified couple of main issues:
+
+- Human **connections** are lacking
+- Ever present **bots** become increasingly soul-crushing
+- Data **privacy** is lacking
+
+For this reason we are building the next generation of social media on our core belives:
+
+- **Humans** some first, before corporate profit
+- We are not going to perpetuate **dead internet**
+- You are the sole owner of **your** content
+
+We might not be the ones who will finally break the pattern, but we are choosing to add our skills towards bringing humanity a trully better way to build meaningful connections
 
 ---
 
@@ -22,7 +41,7 @@ MoodFi is a simplified SocialFi dApp where:
 - If a post gets **1 like or more**, the user can **mint it as a Mood NFT**
 - Minted NFTs can be **listed, repriced, and traded** in the built-in **NFT Marketplace**
 - Users earn **$NOCX tokens** based on activity and engagement
-- **Challenge-to-Earn** mode lets users match the **Daily Mood** to win extra rewards
+- **Vibe-to-Earn** mode lets users match the **Daily Mood** to win extra rewards
 - An **AI chatbot** interacts with users via **live mood streaming conversations**
 
 This is a **proof-of-concept prototype** that showcases the potential of mood-based social engagement in Web3 using the Lens ecosystem.
@@ -38,7 +57,7 @@ This is a **proof-of-concept prototype** that showcases the potential of mood-ba
 - 🎖️ **$NOCX Token Rewards** – Mood posts and mints are tied to the $NOCX token, the native currency of NOCENA.
 - 🧬 **Soulbound NFTs** – Minted moods are non-transferable to preserve identity.
 - 🛒 **NFT Marketplace** – Users can **list**, **change prices**, and **buy others’ NFTs** in a dedicated in-app marketplace.
-- 🎯 **Challenge-to-Earn** – Match your mood with the **Daily Mood Challenge** to earn bonus $NOCX rewards.
+- 🎯 **Vibe-to-Earn** – Match your mood with the **Daily Mood Challenge** to earn bonus $NOCX rewards.
 - 💬 **AI Mood Stream Chatbot** – Real-time mood interactions via a conversational chatbot that reacts to your emotions.
 
 ---
@@ -81,7 +100,7 @@ Next steps could include:
 - ✅ AI mood score integration
 - ✅ Mint after social score threshold
 - ✅ NFT Marketplace for buying/selling
-- ✅ Challenge-to-Earn mode
+- ✅ Vibe-to-Earn mode
 - ✅ AI mood chatbot integration
 - ⏳ Mood leaderboard & vibe analytics
 - ⏳ DAO-based mood voting & quests

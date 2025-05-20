@@ -51,68 +51,6 @@ const VoiceTherapyPage: React.FC = () => {
       position="relative"
       overflow="hidden"
     >
-      {/* Header with MoodFi logo */}
-      <Flex
-        p={4}
-        borderBottom="1px solid"
-        borderColor="gray.800"
-        alignItems="center"
-        justifyContent="space-between"
-        position="relative"
-        zIndex={5}
-      >
-        <HStack spacing={2}>
-          <Image 
-            src="/public/logo/eyes.png" 
-            alt="MoodFi Logo" 
-            boxSize="40px"
-            fallback={
-              <Box boxSize="40px" borderRadius="md" bg="purple.500" />
-            }
-          />
-          <Text
-            fontSize="xl"
-            fontWeight="bold"
-            bgGradient="linear(to-r, purple.400, blue.400)"
-            bgClip="text"
-          >
-            MoodFi
-          </Text>
-        </HStack>
-
-        <HStack spacing={4}>
-          <IconButton
-            aria-label="Toggle theme"
-            icon={<Box as="span" fontSize="xl">☀️</Box>}
-            variant="ghost"
-            color="gray.400"
-            _hover={{ color: "white" }}
-          />
-          <IconButton
-            aria-label="Notifications"
-            icon={<Box as="span" fontSize="xl">🔔</Box>}
-            variant="ghost"
-            color="gray.400"
-            _hover={{ color: "white" }}
-          />
-          <IconButton
-            aria-label="Take photo"
-            icon={<Box as="span" fontSize="xl">📷</Box>}
-            colorScheme="purple"
-            borderRadius="lg"
-          />
-          <Box 
-            as="button"
-            boxSize="40px"
-            borderRadius="full"
-            bg="gray.200"
-            overflow="hidden"
-          >
-            <Box as="span" fontSize="xl">👤</Box>
-          </Box>
-        </HStack>
-      </Flex>
-
       {/* Main content area */}
       <Box
         position="relative" 

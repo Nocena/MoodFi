@@ -1,18 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-.username-ellipsis {
-    max-width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
 
 /* Global styles for MoodFi App */
 
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700&display=swap');
+
+/* Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Base styles */
 body {
@@ -23,6 +18,15 @@ body {
   background-color: #000000;
   color: #ffffff;
 }
+
+/* Profile */
+.username-ellipsis {
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
 /* Glowing effects */
 .glow-text {
