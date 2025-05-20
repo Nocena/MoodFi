@@ -34,10 +34,8 @@ import {formatDate} from "../utils/common.utils";
 import {follow, unfollow} from "@lens-protocol/client/actions";
 import {useNFTStore} from "../store/nftStore";
 import {ethers} from "ethers";
-import {useAccount} from "wagmi";
 
 const ProfilePage: React.FC = () => {
-    const {address: walletAddress} = useAccount()
     const {client, currentAccount} = useLensAuth();
     const {allNFTs, fetchListings} = useNFTStore();
     const {name} = useParams();
@@ -64,12 +62,8 @@ const ProfilePage: React.FC = () => {
 
     useEffect(() => {
         fetchListings()
-    }, [])
+    }, [fetchListings])
 
-    useEffect(() => {
-        setAccountNFTs(allNFTs.filter(NFT => NFT.owner === walletAddress))
-    }, [allNFTs, walletAddress]);
-    
     useEffect(() => {
         (async () => {
             try {
@@ -95,9 +89,13 @@ const ProfilePage: React.FC = () => {
                     isFollowedByMe: selectedAccount?.isFollowedByMe ?? false,
                 })
 
+                console.log("selectedAccount", selectedAccount)
+
                 const posts = await getAccountPosts(client, selectedAccount.accountAddress)
                 setAccountPosts(posts)
                 setIsHistoryLoading(false)
+
+                setAccountNFTs(allNFTs.filter(NFT => NFT.userName === selectedAccount.localName))
             } catch (e) {
                 console.log("error", e)
                 setIsError(true)
@@ -105,7 +103,7 @@ const ProfilePage: React.FC = () => {
             }
         })()
 
-    }, [client, currentAccount, userName]);
+    }, [allNFTs, client, currentAccount, userName]);
 
     const bgGray50 = useColorModeValue('gray.50', 'gray.700')
     const bgWhiteGray = useColorModeValue('white', 'gray.800')
