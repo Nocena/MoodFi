@@ -157,8 +157,8 @@ export const LensAuthProvider = ({children}: { children: React.ReactNode }) => {
     }, [restore, walletAddress]);
 
     useEffect(() => {
-        setIsAuthenticated(!!activeSession);
-    }, [activeSession])
+        setIsAuthenticated(!!activeSession && !!currentAccount);
+    }, [activeSession, currentAccount])
 
     return (
         <LensAuthContext.Provider
