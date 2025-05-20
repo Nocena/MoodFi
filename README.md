@@ -1,5 +1,9 @@
 # 🌈 MoodFi – A NOCENA SocialFi App for the Lens Spring Hackathon
 
+## 🌐 Live Demo
+
+Check out the live app here: [https://mood-fi.vercel.app](https://mood-fi.vercel.app)
+
 **MoodFi** is a lightweight SocialFi prototype built for the **Lens Spring Hackathon** by the NOCENA team. It allows users to upload mood-based images, receive AI-powered mood analysis, and **earn rewards in $NOCX**, the native token of the NOCENA ecosystem.
 
 Users can vibe, post, and if their mood content reaches a specific **social score threshold (currently 1 like)**, they can **mint their mood as a Soulbound NFT** – creating a verifiable on-chain memory.

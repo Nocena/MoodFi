@@ -31,6 +31,7 @@ import {useLensAuth} from "../providers/LensAuthProvider";
 import {useAccount} from "wagmi";
 import {AccountType} from "../types";
 import {fetchAvailableLensAccounts} from "../utils/lens.utils";
+import logo from '../../moodfi-logo.png';
 
 const features = [
     {
@@ -222,7 +223,7 @@ const SignInPage: React.FC = () => {
                     <GridItem>
                         <VStack align="flex-start" spacing={8} pr={{base: 0, lg: 20}}>
                             <VStack align="flex-start" spacing={2} pr={{base: 0, lg: 20}}>
-                                <Image width={40} src="./moodfi-logo.png"/>
+                                <Image width={40} src={logo}/>
                                 <Flex align="center" gap={3}>
                                     <Heading
                                         fontSize="5xl"

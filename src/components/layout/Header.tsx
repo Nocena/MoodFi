@@ -32,6 +32,7 @@ import {Bell, Camera, Coins, LogOut, Moon, RefreshCw, Sun, User,} from 'lucide-r
 import {useLensAuth} from "../../providers/LensAuthProvider";
 import {useUserTokenBalance} from "../../store/useUserTokenBalance";
 import {useAccount} from "wagmi";
+import logo from '../../../moodfi-logo.png';
 
 const Header: React.FC = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -106,7 +107,7 @@ const Header: React.FC = () => {
                 as={RouterLink}
                 to="/"
             >
-              <Image width={10} src="./moodfi-logo.png"/>
+              <Image width={10} src={logo}/>
               <Text
                   textAlign={useBreakpointValue({ base: 'left', md: 'left' })}
                   fontFamily={'heading'}

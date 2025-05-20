@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Image, useColorModeValue } from '@chakra-ui/react';
-
+import buttonLogo from '../../../AI.png'
 const AIFloatingButton: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +36,7 @@ const AIFloatingButton: React.FC = () => {
       }}
     >
       <Image 
-        src="/AI.png" 
+        src={buttonLogo}
         alt="AI Assistant" 
         width="76px"
         height="76px"
